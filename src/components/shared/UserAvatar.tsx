@@ -97,7 +97,7 @@ export function UserAvatar({
           className={cn(
             'flex items-center justify-center font-semibold tracking-wide',
             // Refined gradient with more depth
-            'bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900',
+            'bg-gradient-to-br from-[#43301c] via-[#2b1e12] to-[#1f1a17]',
             'text-white/90',
             // Subtle inner shadow for depth
             'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1),inset_0_-1px_0_0_rgba(0,0,0,0.2)]',
@@ -112,7 +112,7 @@ export function UserAvatar({
         <div
           className={cn(
             'absolute flex items-center justify-center',
-            'rounded-full border-2 border-[#0a1628]',
+            'rounded-full border-2 border-[#2b1e12]',
             'bg-gradient-to-br from-emerald-400 to-emerald-500',
             'shadow-lg shadow-emerald-500/30',
             badgeSizeClass

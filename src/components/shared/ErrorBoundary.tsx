@@ -36,7 +36,7 @@ export class ErrorBoundary extends Component<Props, State> {
       return (
         <div className="flex min-h-[400px] flex-col items-center justify-center p-8">
           <h2 className="mb-4 text-2xl font-semibold">Something went wrong</h2>
-          <p className="mb-6 text-gray-600">
+          <p className="text-hm-muted mb-6">
             We encountered an unexpected error.
           </p>
           <Button

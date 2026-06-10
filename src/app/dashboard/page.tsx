@@ -50,15 +50,15 @@ export default async function DashboardPage({
     // error).
     return (
       <div className="gradient-grid-bg min-h-screen">
-        <div className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-6 py-12 text-center text-white">
+        <div className="text-hm-ink mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-6 py-12 text-center">
           <h1 className="text-2xl font-semibold">
             We&rsquo;re still setting up your account
           </h1>
-          <p className="mt-3 text-sm text-white/70">
+          <p className="text-hm-muted mt-3 text-sm">
             Your sign-up just landed and we&rsquo;re finalizing things. Refresh
             in a few seconds, or reach out at{' '}
             <a
-              className="text-cyan-300 underline"
+              className="text-hm-link hover:text-hm-link-hover underline"
               href="mailto:hello@homematch.pro"
             >
               hello@homematch.pro

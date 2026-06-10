@@ -170,10 +170,10 @@ export function SecureMapLoader({
 
 function MapLoadingFallback() {
   return (
-    <div className="flex h-32 w-full items-center justify-center rounded-lg bg-gray-100">
+    <div className="bg-hm-surface flex h-32 w-full items-center justify-center rounded-lg">
       <div className="flex items-center space-x-2">
-        <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-blue-600"></div>
-        <span className="text-sm text-gray-600">Loading map...</span>
+        <div className="border-hm-accent h-4 w-4 animate-spin rounded-full border-b-2"></div>
+        <span className="text-hm-muted text-sm">Loading map...</span>
       </div>
     </div>
   )
@@ -181,10 +181,10 @@ function MapLoadingFallback() {
 
 function MapErrorFallback({ error }: { error: string }) {
   return (
-    <div className="flex h-32 w-full items-center justify-center rounded-lg bg-gray-100">
+    <div className="bg-hm-surface flex h-32 w-full items-center justify-center rounded-lg">
       <div className="text-center">
         <div className="mb-1 text-sm text-red-500">⚠️ Map Unavailable</div>
-        <div className="text-xs text-gray-600">{error}</div>
+        <div className="text-hm-muted text-xs">{error}</div>
       </div>
     </div>
   )

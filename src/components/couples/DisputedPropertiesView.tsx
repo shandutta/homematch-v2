@@ -199,7 +199,7 @@ export function DisputedPropertiesView({
       case 'dislike':
         return <X className="h-5 w-5 text-red-500" />
       case 'skip':
-        return <ChevronDown className="h-5 w-5 text-gray-500" />
+        return <ChevronDown className="text-hm-faint h-5 w-5" />
     }
   }
 
@@ -210,7 +210,7 @@ export function DisputedPropertiesView({
       case 'dislike':
         return 'bg-red-100 text-red-700 border-red-200'
       case 'skip':
-        return 'bg-gray-100 text-gray-700 border-gray-200'
+        return 'bg-hm-surface text-hm-ink-soft border-hm-border'
     }
   }
 
@@ -362,10 +362,10 @@ export function DisputedPropertiesView({
                 <div className="grid gap-6 md:grid-cols-2">
                   {/* Partner 1 Side */}
                   <div className="space-y-3">
-                    <div className="flex items-center gap-3 border-b border-gray-200 pb-2">
-                      <UserCircle className="h-6 w-6 text-blue-500" />
+                    <div className="border-hm-border flex items-center gap-3 border-b pb-2">
+                      <UserCircle className="text-couples-primary h-6 w-6" />
                       <div>
-                        <h4 className="font-medium text-blue-700">
+                        <h4 className="text-couples-primary font-medium">
                           {property.partner1.user_name}
                         </h4>
                         <p className="text-muted-foreground text-xs">
@@ -392,11 +392,11 @@ export function DisputedPropertiesView({
                     </div>
 
                     {property.partner1.notes && (
-                      <div className="rounded-lg bg-blue-50 p-3">
-                        <p className="mb-1 text-sm font-medium text-blue-700">
+                      <div className="bg-couples-primary/10 rounded-lg p-3">
+                        <p className="text-couples-primary mb-1 text-sm font-medium">
                           Notes:
                         </p>
-                        <p className="text-sm text-blue-600">
+                        <p className="text-couples-primary text-sm">
                           {property.partner1.notes}
                         </p>
                       </div>
@@ -404,14 +404,14 @@ export function DisputedPropertiesView({
                   </div>
 
                   {/* Divider */}
-                  <div className="absolute top-0 bottom-0 left-1/2 hidden w-px -translate-x-1/2 transform bg-gradient-to-b from-transparent via-gray-300 to-transparent md:block" />
+                  <div className="via-hm-border-strong absolute top-0 bottom-0 left-1/2 hidden w-px -translate-x-1/2 transform bg-gradient-to-b from-transparent to-transparent md:block" />
 
                   {/* Partner 2 Side */}
                   <div className="space-y-3">
-                    <div className="flex items-center gap-3 border-b border-gray-200 pb-2">
-                      <UserCircle className="h-6 w-6 text-purple-500" />
+                    <div className="border-hm-border flex items-center gap-3 border-b pb-2">
+                      <UserCircle className="text-couples-secondary h-6 w-6" />
                       <div>
-                        <h4 className="font-medium text-purple-700">
+                        <h4 className="text-couples-secondary font-medium">
                           {property.partner2.user_name}
                         </h4>
                         <p className="text-muted-foreground text-xs">
@@ -438,11 +438,11 @@ export function DisputedPropertiesView({
                     </div>
 
                     {property.partner2.notes && (
-                      <div className="rounded-lg bg-purple-50 p-3">
-                        <p className="mb-1 text-sm font-medium text-purple-700">
+                      <div className="bg-couples-secondary/10 rounded-lg p-3">
+                        <p className="text-couples-secondary mb-1 text-sm font-medium">
                           Notes:
                         </p>
-                        <p className="text-sm text-purple-600">
+                        <p className="text-couples-secondary text-sm">
                           {property.partner2.notes}
                         </p>
                       </div>
@@ -470,7 +470,7 @@ export function DisputedPropertiesView({
                                 .map((image, idx) => (
                                   <div
                                     key={idx}
-                                    className="aspect-video overflow-hidden rounded-lg bg-gray-200"
+                                    className="bg-hm-border aspect-video overflow-hidden rounded-lg"
                                   >
                                     {/* eslint-disable-next-line @next/next/no-img-element */}
                                     <img
@@ -488,7 +488,7 @@ export function DisputedPropertiesView({
                 </AnimatePresence>
 
                 {/* Resolution Actions */}
-                <div className="mt-6 border-t border-gray-200 pt-4">
+                <div className="border-hm-border mt-6 border-t pt-4">
                   <p className="text-muted-foreground mb-3 text-sm font-medium">
                     How would you like to resolve this disagreement?
                   </p>
@@ -504,7 +504,7 @@ export function DisputedPropertiesView({
                         )
                       }
                       disabled={resolutionLoading === property.property_id}
-                      className="border-blue-200 text-blue-700 hover:bg-blue-50"
+                      className="border-hm-accent/40 text-hm-accent-strong hover:bg-hm-accent/10"
                     >
                       <MessageSquare className="mr-2 h-4 w-4" />
                       Discuss

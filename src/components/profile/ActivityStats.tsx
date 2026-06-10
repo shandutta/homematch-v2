@@ -83,10 +83,10 @@ export function ActivityStats({ summary }: ActivityStatsProps) {
       label: 'Saved Searches',
       value: summary.saved_searches,
       icon: Search,
-      gradient: 'from-sky-500/20 to-sky-600/5',
-      iconBg: 'bg-sky-500/10',
-      iconColor: 'text-sky-400',
-      valueColor: 'text-sky-300',
+      gradient: 'from-hm-accent/20 to-hm-accent-strong/5',
+      iconBg: 'bg-hm-accent/10',
+      iconColor: 'text-hm-accent',
+      valueColor: 'text-hm-accent-strong',
     },
   ]
 
@@ -106,9 +106,9 @@ export function ActivityStats({ summary }: ActivityStatsProps) {
         title: 'Balanced approach!',
         description:
           "You've liked and passed on an equal number of properties.",
-        color: 'text-sky-400',
-        bg: 'bg-sky-500/10',
-        border: 'border-sky-500/20',
+        color: 'text-hm-accent',
+        bg: 'bg-hm-accent/10',
+        border: 'border-hm-accent/20',
       }
     } else {
       return {
@@ -130,13 +130,13 @@ export function ActivityStats({ summary }: ActivityStatsProps) {
       <div className="card-luxury overflow-hidden p-6 sm:p-8">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5">
-            <ActivityIcon className="text-hm-stone-400 h-5 w-5" />
+            <ActivityIcon className="text-hm-muted h-5 w-5" />
           </div>
           <div>
-            <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">
+            <h2 className="font-heading text-hm-ink text-xl font-semibold">
               Activity Overview
             </h2>
-            <p className="text-hm-stone-500 text-sm">
+            <p className="text-hm-muted text-sm">
               Your property search statistics
             </p>
           </div>
@@ -160,7 +160,7 @@ export function ActivityStats({ summary }: ActivityStatsProps) {
                 <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
                 <div className="relative">
                   <div className="flex items-center justify-between">
-                    <p className="text-hm-stone-500 text-xs font-medium tracking-[0.1em] uppercase">
+                    <p className="text-hm-muted text-xs font-medium tracking-[0.1em] uppercase">
                       {stat.label.split(' ')[0]}
                     </p>
                     <div
@@ -174,7 +174,7 @@ export function ActivityStats({ summary }: ActivityStatsProps) {
                   >
                     {stat.value.toLocaleString()}
                   </p>
-                  <p className="text-hm-stone-500 mt-1 text-xs">
+                  <p className="text-hm-muted mt-1 text-xs">
                     {stat.label.split(' ')[1]}
                   </p>
                 </div>
@@ -188,15 +188,15 @@ export function ActivityStats({ summary }: ActivityStatsProps) {
           <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-hm-stone-500 text-xs font-medium tracking-[0.15em] uppercase">
+                <p className="text-hm-muted text-xs font-medium tracking-[0.15em] uppercase">
                   Total Interactions
                 </p>
-                <p className="font-display text-hm-stone-200 mt-1 text-2xl font-medium">
+                <p className="font-display text-hm-ink mt-1 text-2xl font-medium">
                   {summary.total_interactions.toLocaleString()}
                 </p>
               </div>
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5">
-                <ActivityIcon className="text-hm-stone-400 h-5 w-5" />
+                <ActivityIcon className="text-hm-muted h-5 w-5" />
               </div>
             </div>
           </div>
@@ -204,15 +204,15 @@ export function ActivityStats({ summary }: ActivityStatsProps) {
           <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-hm-stone-500 text-xs font-medium tracking-[0.15em] uppercase">
+                <p className="text-hm-muted text-xs font-medium tracking-[0.15em] uppercase">
                   Engagement Rate
                 </p>
-                <p className="font-display text-hm-stone-200 mt-1 text-2xl font-medium">
+                <p className="font-display text-hm-ink mt-1 text-2xl font-medium">
                   {engagementRate}%
                 </p>
               </div>
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5">
-                <TrendingUp className="text-hm-stone-400 h-5 w-5" />
+                <TrendingUp className="text-hm-muted h-5 w-5" />
               </div>
             </div>
             <div className="mt-3">
@@ -224,7 +224,7 @@ export function ActivityStats({ summary }: ActivityStatsProps) {
                   className="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-400"
                 />
               </div>
-              <p className="text-hm-stone-500 mt-2 text-xs">
+              <p className="text-hm-muted mt-2 text-xs">
                 Percentage of viewed properties you liked
               </p>
             </div>
@@ -241,13 +241,13 @@ export function ActivityStats({ summary }: ActivityStatsProps) {
       >
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5">
-            <Sparkles className="text-hm-stone-400 h-5 w-5" />
+            <Sparkles className="text-hm-muted h-5 w-5" />
           </div>
           <div>
-            <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">
+            <h2 className="font-heading text-hm-ink text-xl font-semibold">
               Insights
             </h2>
-            <p className="text-hm-stone-500 text-sm">
+            <p className="text-hm-muted text-sm">
               Understanding your preferences
             </p>
           </div>
@@ -265,7 +265,7 @@ export function ActivityStats({ summary }: ActivityStatsProps) {
             </div>
             <div>
               <p className={`font-medium ${insight.color}`}>{insight.title}</p>
-              <p className="text-hm-stone-400 mt-1 text-sm">
+              <p className="text-hm-muted mt-1 text-sm">
                 {insight.description}
               </p>
             </div>
@@ -275,12 +275,12 @@ export function ActivityStats({ summary }: ActivityStatsProps) {
           {summary.saved_searches > 0 && (
             <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-500/10">
-                  <Search className="h-4 w-4 text-sky-400" />
+                <div className="bg-hm-accent/10 flex h-8 w-8 items-center justify-center rounded-lg">
+                  <Search className="text-hm-accent h-4 w-4" />
                 </div>
-                <p className="text-hm-stone-400 text-sm">
+                <p className="text-hm-muted text-sm">
                   You have{' '}
-                  <span className="font-medium text-sky-300">
+                  <span className="text-hm-accent-strong font-medium">
                     {summary.saved_searches} saved{' '}
                     {summary.saved_searches === 1 ? 'search' : 'searches'}
                   </span>{' '}
@@ -292,8 +292,8 @@ export function ActivityStats({ summary }: ActivityStatsProps) {
 
           {/* Tip */}
           <div className="rounded-xl border border-dashed border-white/10 bg-white/[0.02] p-4">
-            <p className="text-hm-stone-500 text-xs">
-              <span className="text-hm-stone-400 font-medium">Pro tip:</span>{' '}
+            <p className="text-hm-muted text-xs">
+              <span className="text-hm-muted font-medium">Pro tip:</span>{' '}
               Properties you like appear in your Favorites. Share your household
               code with a household member to discover mutual likes together.
             </p>

@@ -75,7 +75,7 @@ export default async function SettingsPage({
   // component on a null `profile.preferences` access.
   if (!profile) {
     return (
-      <div className="gradient-grid-bg dark min-h-screen">
+      <div className="gradient-grid-bg min-h-screen">
         <div className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-6 py-12 text-center text-white">
           <h1 className="text-2xl font-semibold">
             Settings are loading&hellip;
@@ -84,7 +84,7 @@ export default async function SettingsPage({
             Your account is still being set up. Refresh in a few seconds, or
             contact{' '}
             <a
-              className="text-cyan-300 underline"
+              className="text-hm-accent underline"
               href="mailto:hello@homematch.pro"
             >
               hello@homematch.pro
@@ -97,7 +97,7 @@ export default async function SettingsPage({
   }
 
   return (
-    <div className="gradient-grid-bg dark min-h-screen">
+    <div className="gradient-grid-bg min-h-screen">
       <SettingsPageClient
         user={userShape}
         profile={profile}

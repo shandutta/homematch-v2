@@ -80,61 +80,61 @@ export default async function InvitePage({
       : invite.status.charAt(0).toUpperCase() + invite.status.slice(1)
 
   return (
-    <div className="min-h-screen bg-[#030c24] px-4 py-10 text-white">
+    <div className="bg-hm-canvas text-hm-ink min-h-screen px-4 py-10">
       <div className="mx-auto max-w-2xl space-y-6">
         <Link
           href="/dashboard"
-          className="inline-flex items-center text-sm text-white/80 transition hover:text-white"
+          className="text-hm-muted hover:text-hm-ink inline-flex items-center text-sm transition"
         >
           ← Back to dashboard
         </Link>
 
-        <Card className="rounded-3xl border border-white/10 bg-white/95 text-slate-900 shadow-2xl">
+        <Card className="border-hm-border bg-hm-surface-raised text-hm-ink rounded-3xl border shadow-2xl">
           <CardHeader className="space-y-2">
             <CardTitle className="flex items-center gap-2 text-2xl">
-              <Users className="h-6 w-6 text-slate-400" />
+              <Users className="text-hm-faint h-6 w-6" />
               Join {invite.household?.name || 'this household'}
             </CardTitle>
-            <p className="text-sm text-slate-500">
+            <p className="text-hm-faint text-sm">
               {inviterName} invited you to search for homes together.
             </p>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="grid gap-4 rounded-2xl border border-slate-100 bg-slate-50 p-4 sm:grid-cols-3">
+            <div className="border-hm-border bg-hm-canvas grid gap-4 rounded-2xl border p-4 sm:grid-cols-3">
               <div>
-                <p className="text-xs font-semibold tracking-wide text-slate-500 uppercase">
+                <p className="text-hm-faint text-xs font-semibold tracking-wide uppercase">
                   Household
                 </p>
-                <p className="text-lg font-semibold text-slate-900">
+                <p className="text-hm-ink text-lg font-semibold">
                   {invite.household?.name}
                 </p>
               </div>
               <div>
-                <p className="text-xs font-semibold tracking-wide text-slate-500 uppercase">
+                <p className="text-hm-faint text-xs font-semibold tracking-wide uppercase">
                   Collaboration mode
                 </p>
-                <p className="text-lg font-semibold text-slate-900 capitalize">
+                <p className="text-hm-ink text-lg font-semibold capitalize">
                   {invite.household?.collaboration_mode ?? 'shared'}
                 </p>
               </div>
               <div>
-                <p className="text-xs font-semibold tracking-wide text-slate-500 uppercase">
+                <p className="text-hm-faint text-xs font-semibold tracking-wide uppercase">
                   Expires
                 </p>
-                <p className="text-lg font-semibold text-slate-900">
+                <p className="text-hm-ink text-lg font-semibold">
                   {formatDate(invite.expires_at)}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 text-sm text-slate-600">
+            <div className="text-hm-muted flex items-center gap-2 text-sm">
               <ShieldCheck className="h-4 w-4 text-emerald-500" />
               <span>
                 Accepting will link your saved homes with this household.
               </span>
             </div>
 
-            <div className="flex items-center gap-2 text-sm text-slate-600">
+            <div className="text-hm-muted flex items-center gap-2 text-sm">
               <Clock4 className="h-4 w-4 text-amber-500" />
               <span>
                 Invitation status:{' '}
@@ -142,7 +142,7 @@ export default async function InvitePage({
                   className={
                     canAccept
                       ? 'bg-emerald-100 text-emerald-700'
-                      : 'bg-slate-200 text-slate-600'
+                      : 'bg-hm-surface text-hm-muted'
                   }
                 >
                   {statusLabel}
@@ -151,7 +151,7 @@ export default async function InvitePage({
             </div>
 
             {invite.message && (
-              <blockquote className="rounded-2xl border border-slate-100 bg-white p-4 text-sm text-slate-600">
+              <blockquote className="border-hm-border bg-hm-surface-raised text-hm-muted rounded-2xl border p-4 text-sm">
                 “{invite.message}”
               </blockquote>
             )}
@@ -165,7 +165,7 @@ export default async function InvitePage({
               <Button
                 type="button"
                 disabled
-                className="w-full bg-slate-200 text-slate-500"
+                className="bg-hm-surface text-hm-faint w-full"
               >
                 {isExpired
                   ? 'This invitation has expired'
@@ -174,11 +174,11 @@ export default async function InvitePage({
             )}
 
             {!user && canAccept && (
-              <p className="text-center text-sm text-slate-500">
+              <p className="text-hm-faint text-center text-sm">
                 Already have an account?{' '}
                 <Link
                   href={`/login?redirectTo=/invite/${token}`}
-                  className="font-semibold text-slate-900 underline"
+                  className="text-hm-link font-semibold underline"
                 >
                   Sign in to accept
                 </Link>

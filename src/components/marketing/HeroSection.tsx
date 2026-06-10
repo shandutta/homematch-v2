@@ -24,7 +24,7 @@ export function HeroSection({ loggedIn = false }: { loggedIn?: boolean } = {}) {
   return (
     <section
       data-hero
-      className="bg-hm-ivory-50 text-hm-stone-900 relative isolate overflow-hidden"
+      className="bg-hm-canvas text-hm-ink relative isolate overflow-hidden"
       style={heroStyle}
       data-testid="hero"
     >
@@ -76,7 +76,7 @@ export function HeroSection({ loggedIn = false }: { loggedIn?: boolean } = {}) {
       />
 
       {/* Bottom gradient fade */}
-      <div className="from-hm-ivory-50 pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t to-transparent" />
+      <div className="from-hm-canvas pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t to-transparent" />
 
       <HeroMotionEnhancer />
 
@@ -85,13 +85,12 @@ export function HeroSection({ loggedIn = false }: { loggedIn?: boolean } = {}) {
           <div className="grid gap-10 sm:gap-12 lg:grid-cols-[1.05fr,0.95fr] lg:items-center">
             <div className="space-y-5 sm:space-y-8">
               <div className="space-y-4">
-                <h1 className="font-display text-hm-stone-900 text-4xl leading-[1.05] font-semibold tracking-[-0.045em] sm:text-5xl md:text-6xl lg:text-7xl">
-                  Find a home that works for everyone.
+                <h1 className="font-display text-hm-ink text-4xl leading-[1.05] font-semibold tracking-[-0.045em] sm:text-5xl md:text-6xl lg:text-7xl">
+                  Find a home that works for you.
                 </h1>
 
-                <p className="text-hm-stone-600 max-w-2xl text-lg leading-relaxed sm:text-xl">
-                  Swipe through real listings, save the ones your household
-                  likes, and keep the search clear instead of stressful.
+                <p className="text-hm-muted max-w-2xl text-lg leading-relaxed sm:text-xl">
+                  Swipe on homes and match likes with your partner.
                 </p>
               </div>
 
@@ -114,7 +113,7 @@ export function HeroSection({ loggedIn = false }: { loggedIn?: boolean } = {}) {
                 <Button
                   size="lg"
                   variant="ghost"
-                  className="text-hm-stone-600 hover:bg-hm-stone-100 hover:text-hm-stone-900 w-full bg-transparent transition-colors duration-200 sm:w-auto"
+                  className="text-hm-muted hover:bg-hm-surface hover:text-hm-ink w-full bg-transparent transition-colors duration-200 sm:w-auto"
                   asChild
                 >
                   <Link href={secondaryHref}>{secondaryLabel}</Link>

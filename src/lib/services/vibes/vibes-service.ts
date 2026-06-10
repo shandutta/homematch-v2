@@ -23,6 +23,7 @@ import {
   buildVibesMessages,
   type NeighborhoodVibesContext,
   type PropertyContext,
+  type PropertyMarketContext,
 } from './prompts'
 import {
   computeConfidence,
@@ -254,7 +255,10 @@ export class VibesService {
     const inferred = inferTagsFromText(textParts.join('\n'))
     for (const tag of inferred) uniquePush(normalized, tag)
 
-    return normalized.slice(0, 8)
+    // Hard cap at 5 tags (was 8). Cards over-tag and the extra tags are the
+    // generic "Indoor-Outdoor Flow / Commuter Friendly" filler. See prompt
+    // "EXACTLY 4 or 5 tags" — this is the code-level guarantee.
+    return normalized.slice(0, 5)
   }
 
   private static finalizeSuggestedTags(vibes: LLMVibesOutput): LLMVibesOutput {
@@ -264,7 +268,7 @@ export class VibesService {
     }
 
     if (unique.length >= 4) {
-      return { ...vibes, suggestedTags: unique.slice(0, 8) }
+      return { ...vibes, suggestedTags: unique.slice(0, 5) }
     }
 
     const candidate: Record<string, unknown> = {
@@ -284,11 +288,29 @@ export class VibesService {
     const merged: CanonicalTag[] = [...unique]
     for (const tag of filled) uniquePush(merged, tag)
 
-    return { ...vibes, suggestedTags: merged.slice(0, 8) }
+    return { ...vibes, suggestedTags: merged.slice(0, 5) }
   }
 
   private static isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value != null && !Array.isArray(value)
+  }
+
+  // Build the prompt's market-context block from the enrichment columns
+  // (jsonb arrays are stored loosely-typed, so read them defensively).
+  private static toMarketContext(p: Property): PropertyMarketContext | null {
+    const ph = Array.isArray(p.price_history) ? p.price_history : null
+    const sc = Array.isArray(p.schools) ? p.schools : null
+    const dom = typeof p.days_on_market === 'number' ? p.days_on_market : null
+    const hoa = typeof p.hoa_fee === 'number' ? p.hoa_fee : null
+    if (dom === null && hoa === null && !ph && !sc) return null
+    return {
+      daysOnMarket: dom,
+      hoaFeeMonthly: hoa,
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      priceHistory: ph as PropertyMarketContext['priceHistory'],
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      schools: sc as PropertyMarketContext['schools'],
+    }
   }
 
   private static clampString(
@@ -495,14 +517,31 @@ export class VibesService {
 
   /**
    * Generate vibes for a single property
+   *
+   * `extras.imageCap` overrides the maximum number of images sent to the
+   * vision model (default 18). The bake-off backfill runs with cap=40 so
+   * the LLM has more of the listing to ground its claims in; production
+   * cron keeps the cheaper default.
+   *
+   * `extras.model` overrides the OpenRouter model id for this call only
+   * (no instance-state mutation). Used by the bake-off backfill to
+   * compare e.g. qwen3.6-plus vs gemini-3-flash-preview side-by-side
+   * without spinning up a second client.
    */
   async generateVibes(
     property: Property,
-    extras?: { neighborhoodVibes?: NeighborhoodVibesContext | null }
+    extras?: {
+      neighborhoodVibes?: NeighborhoodVibesContext | null
+      imageCap?: number
+      model?: string
+    }
   ): Promise<VibesGenerationResult> {
     const startTime = Date.now()
 
-    // Select strategic images
+    // Select strategic images. imageCap defaults to 18 to preserve the
+    // pre-bake-off cron behavior; callers (backfill scripts, batch
+    // runners) can override per-call.
+    const imageCap = extras?.imageCap ?? 18
     const selectionSeed = Number.parseInt(
       crypto.createHash('md5').update(property.id).digest('hex').slice(0, 8),
       16
@@ -511,7 +550,7 @@ export class VibesService {
       property.images,
       property.property_type,
       property.lot_size_sqft,
-      18,
+      imageCap,
       selectionSeed
     )
 
@@ -534,6 +573,7 @@ export class VibesService {
       amenities: property.amenities,
       description: property.description,
       neighborhoodVibes: extras?.neighborhoodVibes ?? null,
+      market: VibesService.toMarketContext(property),
     }
 
     // Build prompts
@@ -550,8 +590,13 @@ export class VibesService {
     )
 
     const attemptConfigs = [
-      { temperature: 0.7, maxTokens: 2000 },
-      { temperature: 0.2, maxTokens: 2000 },
+      // maxTokens 3000 (was 2000): gemini-2.5-flash is a thinking model, so
+      // the budget must cover reasoning tokens plus the richer 2-sentence
+      // vibeStatement and grounded feature reasons. Real outputs run ~300
+      // completion tokens, so this cap only guards pathological cases —
+      // typical output cost is unchanged.
+      { temperature: 0.7, maxTokens: 3000 },
+      { temperature: 0.2, maxTokens: 3000 },
     ]
 
     let parsedVibes: LLMVibesOutput | null = null
@@ -559,6 +604,7 @@ export class VibesService {
     let repairApplied = false
     let lastError: unknown = null
     let lastPreview: string | null = null
+    let lastDiag: string | null = null
     let modelUsed: string = DEFAULT_VIBES_MODEL
     const usageTotals: UsageInfo = {
       promptTokens: 0,
@@ -573,6 +619,9 @@ export class VibesService {
         {
           ...attemptConfigs[attempt],
           responseFormat: { type: 'json_object' },
+          // Per-call model override (bake-off path). When undefined the
+          // OpenRouter client falls back to its configured default.
+          ...(extras?.model ? { model: extras.model } : {}),
         }
       )
 
@@ -622,6 +671,7 @@ export class VibesService {
           rawContent.length > 2000
             ? `${rawContent.slice(0, 2000)}…`
             : rawContent
+        lastDiag = `finish_reason=${response.choices?.[0]?.finish_reason ?? '?'} completionTokens=${usage.completionTokens} contentLen=${rawContent.length}`
         repairApplied = true
       }
     }
@@ -631,6 +681,7 @@ export class VibesService {
         console.error(
           '[VibesService] Failed to parse/validate LLM response:',
           `property=${property.id}`,
+          `[${lastDiag ?? 'no-diag'}]`,
           lastPreview
         )
       }
@@ -669,10 +720,15 @@ export class VibesService {
       ) => Promise<Property | void> | Property | void
       // Optional per-property extras keyed by property.id. Currently used to
       // pass neighborhood_vibes context into the LLM prompt
-      // (NEIGHBORHOOD-VIBES-WIRE).
+      // (NEIGHBORHOOD-VIBES-WIRE), and to override model / imageCap during
+      // bake-off backfills.
       extrasByPropertyId?: Map<
         string,
-        { neighborhoodVibes?: NeighborhoodVibesContext | null }
+        {
+          neighborhoodVibes?: NeighborhoodVibesContext | null
+          imageCap?: number
+          model?: string
+        }
       >
     }
   ): Promise<BatchGenerationResult> {

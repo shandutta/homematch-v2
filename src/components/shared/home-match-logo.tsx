@@ -18,7 +18,7 @@ const textSizes: Record<LogoSize, string> = {
 
 const variantTextClasses: Record<LogoVariant, string> = {
   light: 'text-white',
-  dark: 'text-slate-900',
+  dark: 'text-hm-ink',
 }
 
 interface HomeMatchLogoProps extends ComponentPropsWithoutRef<'span'> {
@@ -73,9 +73,9 @@ export function HomeMatchLogo({
             x2="100%"
             y2="100%"
           >
-            <stop offset="0%" stopColor="#3B82F6" />
-            <stop offset="55%" stopColor="#7C3AED" />
-            <stop offset="100%" stopColor="#EC4899" />
+            <stop offset="0%" stopColor="#d29a35" />
+            <stop offset="55%" stopColor="#b7791f" />
+            <stop offset="100%" stopColor="#935f16" />
           </linearGradient>
           <linearGradient
             id="hm-logo-heart"
@@ -84,9 +84,9 @@ export function HomeMatchLogo({
             x2="80%"
             y2="90%"
           >
-            <stop offset="0%" stopColor="#E0F2FE" />
-            <stop offset="45%" stopColor="#C4B5FD" />
-            <stop offset="100%" stopColor="#FBCFE8" />
+            <stop offset="0%" stopColor="#fffaf2" />
+            <stop offset="45%" stopColor="#f1e4c8" />
+            <stop offset="100%" stopColor="#e3c896" />
           </linearGradient>
         </defs>
         <rect width="48" height="48" rx="14" fill="url(#hm-logo-surface)" />
@@ -108,7 +108,7 @@ export function HomeMatchLogo({
           width="9"
           height="8.75"
           rx="1.6"
-          fill="rgba(15,23,42,0.55)"
+          fill="rgba(43,30,18,0.55)"
         />
         <rect x="22.5" y="28.75" width="3" height="5" rx="0.8" fill="white" />
       </svg>

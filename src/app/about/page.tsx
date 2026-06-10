@@ -1,6 +1,9 @@
-import Link from 'next/link'
 import { createPublicRouteMetadata } from '@/lib/seo/route-metadata'
 import { MarketingPageHeader } from '@/components/marketing/MarketingPageHeader'
+import { EditorialPageShell } from '@/components/editorial/EditorialPageShell'
+import { EditorialPageHeader } from '@/components/editorial/EditorialPageHeader'
+import { EditorialSection } from '@/components/editorial/EditorialSection'
+import { EditorialLink } from '@/components/editorial/EditorialLink'
 
 export const metadata = createPublicRouteMetadata({
   title: 'About HomeMatch | Collaborative Home Search for Households',
@@ -11,90 +14,60 @@ export const metadata = createPublicRouteMetadata({
 
 export default function AboutPage() {
   return (
-    <main className="bg-slate-50 text-slate-900">
-      <MarketingPageHeader />
-      <div className="mx-auto flex max-w-4xl flex-col gap-10 px-4 py-12 sm:px-6 sm:py-16">
-        <header className="space-y-4">
-          <p className="text-xs font-semibold tracking-[0.2em] text-slate-500 uppercase">
-            About
-          </p>
-          <h1 className="text-3xl font-bold text-balance sm:text-4xl">
-            Home search, together
-          </h1>
-          <p className="max-w-3xl text-lg text-slate-600">
-            HomeMatch helps households shortlist, compare, and agree faster—
-            with a shared flow that feels more like collaboration than chaos.
-          </p>
-        </header>
+    <EditorialPageShell header={<MarketingPageHeader />}>
+      <EditorialPageHeader
+        eyebrow="About"
+        title="Home search, together"
+        lead="HomeMatch helps households shortlist, compare, and agree faster — with a shared flow that feels more like collaboration than chaos."
+      />
 
-        <section className="space-y-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
-          <h2 className="text-xl font-semibold text-balance">
-            What HomeMatch does
-          </h2>
-          <ul className="list-disc space-y-3 pl-5 text-slate-700">
-            <li>
-              Keeps everyone aligned with shared likes, passes, and viewed
-              homes.
-            </li>
-            <li>
-              Highlights what matters (price, layout, neighborhood vibe) so you
-              can decide with less back-and-forth.
-            </li>
-            <li>
-              Aims for clarity over clutter: fewer pop-ups, fewer dark patterns,
-              more signal.
-            </li>
-          </ul>
-        </section>
+      <EditorialSection title="What HomeMatch does">
+        <ul className="text-hm-ink-soft list-disc space-y-3 pl-5">
+          <li>
+            Keeps everyone aligned with shared likes, passes, and viewed homes.
+          </li>
+          <li>
+            Highlights the evidence that matters — price, layout, and
+            neighborhood fit — so you can decide with less back-and-forth.
+          </li>
+          <li>
+            Aims for clarity over clutter: fewer pop-ups, fewer dark patterns,
+            more signal.
+          </li>
+        </ul>
+      </EditorialSection>
 
-        <section className="space-y-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
-          <h2 className="text-xl font-semibold text-balance">
-            How we think about trust
-          </h2>
-          <ul className="list-disc space-y-3 pl-5 text-slate-700">
-            <li>
-              Privacy-first by default. Read our{' '}
-              <Link href="/privacy" className="text-sky-600 underline">
-                Privacy Policy
-              </Link>
-              .
-            </li>
-            <li>
-              Clear labeling when something is sponsored, with ad placements
-              designed to stay out of the way.
-            </li>
-            <li>
-              Transparent rules for using the product in our{' '}
-              <Link href="/terms" className="text-sky-600 underline">
-                Terms of Service
-              </Link>
-              .
-            </li>
-          </ul>
-        </section>
+      <EditorialSection title="How we think about trust">
+        <ul className="text-hm-ink-soft list-disc space-y-3 pl-5">
+          <li>
+            Privacy-first by default. Read our{' '}
+            <EditorialLink href="/privacy">Privacy Policy</EditorialLink>.
+          </li>
+          <li>
+            Clear labeling when something is sponsored, with ad placements
+            designed to stay out of the way.
+          </li>
+          <li>
+            Transparent rules for using the product in our{' '}
+            <EditorialLink href="/terms">Terms of Service</EditorialLink>.
+          </li>
+        </ul>
+      </EditorialSection>
 
-        <section className="space-y-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
-          <h2 className="text-xl font-semibold text-balance">
-            Not a brokerage
-          </h2>
-          <p className="text-slate-700">
-            HomeMatch is a software product to help you organize your home
-            search. We are not a real estate broker or agent, and we don’t
-            provide financial, legal, or investment advice.
-          </p>
-        </section>
+      <EditorialSection title="Not a brokerage">
+        <p className="text-hm-ink-soft">
+          HomeMatch is a software product to help you organize your home search.
+          We are not a real estate broker or agent, and we don’t provide
+          financial, legal, or investment advice.
+        </p>
+      </EditorialSection>
 
-        <section className="space-y-3 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
-          <h2 className="text-xl font-semibold text-balance">Contact</h2>
-          <p className="text-slate-700">
-            Questions, feedback, or partnership ideas? Visit{' '}
-            <Link href="/contact" className="text-sky-600 underline">
-              Contact
-            </Link>
-            .
-          </p>
-        </section>
-      </div>
-    </main>
+      <EditorialSection title="Contact">
+        <p className="text-hm-ink-soft">
+          Questions, feedback, or partnership ideas? Visit{' '}
+          <EditorialLink href="/contact">Contact</EditorialLink>.
+        </p>
+      </EditorialSection>
+    </EditorialPageShell>
   )
 }

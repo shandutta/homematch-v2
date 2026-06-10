@@ -46,24 +46,24 @@ const adConcepts: Array<{
 function renderPreview(preview: AdPreview) {
   if (preview === 'leaderboard') {
     return (
-      <div className="w-full rounded-xl border border-sky-100 bg-gradient-to-r from-sky-50 via-white to-indigo-50 p-4 shadow-[0_12px_28px_-18px_rgba(6,58,158,0.3)]">
-        <div className="flex items-center justify-between text-[11px] font-semibold tracking-[0.12em] text-sky-900 uppercase">
+      <div className="border-hm-border from-hm-canvas via-hm-surface to-hm-canvas w-full rounded-xl border bg-gradient-to-r p-4 shadow-[0_12px_28px_-18px_rgba(43,30,18,0.3)]">
+        <div className="text-hm-accent-strong flex items-center justify-between text-[11px] font-semibold tracking-[0.12em] uppercase">
           <span>Header slot</span>
-          <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] text-sky-800">
+          <span className="bg-hm-accent/15 text-hm-accent-strong rounded-full px-2 py-0.5 text-[10px]">
             Sponsored
           </span>
         </div>
-        <div className="mt-3 flex items-center justify-between rounded-lg border border-sky-100 bg-white/85 px-4 py-3 text-gray-800 backdrop-blur">
+        <div className="border-hm-border bg-hm-surface/85 text-hm-ink-soft mt-3 flex items-center justify-between rounded-lg border px-4 py-3 backdrop-blur">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-sky-100 text-sky-800">
+            <div className="bg-hm-accent/15 text-hm-accent-strong flex h-10 w-10 items-center justify-center rounded-full">
               Ad
             </div>
             <div>
               <p className="text-sm font-semibold">Partner headline + CTA</p>
-              <p className="text-xs text-gray-500">Sits under hero/search</p>
+              <p className="text-hm-faint text-xs">Sits under hero/search</p>
             </div>
           </div>
-          <span className="rounded-full bg-sky-500/90 px-3 py-1 text-xs font-semibold text-white">
+          <span className="bg-hm-accent/90 rounded-full px-3 py-1 text-xs font-semibold text-white">
             Calm
           </span>
         </div>
@@ -119,7 +119,7 @@ export function AdMonetizationMockup() {
         aria-hidden
         style={{
           background:
-            'radial-gradient(1200px 600px at 50% -10%, rgba(2,26,68,0.05) 0%, rgba(2,26,68,0.02) 35%, rgba(255,255,255,1) 65%)',
+            'radial-gradient(1200px 600px at 50% -10%, rgba(43,30,18,0.05) 0%, rgba(43,30,18,0.02) 35%, rgba(255,255,255,1) 65%)',
         }}
       />
       <div
@@ -127,7 +127,7 @@ export function AdMonetizationMockup() {
         aria-hidden
         style={{
           backgroundImage:
-            'repeating-linear-gradient(0deg, rgba(2,26,68,0.05) 0px, rgba(2,26,68,0.05) 1px, transparent 1px, transparent 28px), repeating-linear-gradient(90deg, rgba(2,26,68,0.05) 0px, rgba(2,26,68,0.05) 1px, transparent 1px, transparent 28px)',
+            'repeating-linear-gradient(0deg, rgba(43,30,18,0.05) 0px, rgba(43,30,18,0.05) 1px, transparent 1px, transparent 28px), repeating-linear-gradient(90deg, rgba(43,30,18,0.05) 0px, rgba(43,30,18,0.05) 1px, transparent 1px, transparent 28px)',
           backgroundSize: '28px 28px',
         }}
       />
@@ -136,7 +136,7 @@ export function AdMonetizationMockup() {
         aria-hidden
         style={{
           backgroundImage:
-            'radial-gradient(600px 300px at 80% 0%, rgba(41,227,255,0.12) 0%, rgba(41,227,255,0) 60%), radial-gradient(700px 320px at 15% 0%, rgba(6,58,158,0.10) 0%, rgba(6,58,158,0) 60%)',
+            'radial-gradient(600px 300px at 80% 0%, rgba(183,121,31,0.12) 0%, rgba(183,121,31,0) 60%), radial-gradient(700px 320px at 15% 0%, rgba(111,72,18,0.10) 0%, rgba(111,72,18,0) 60%)',
         }}
       />
 
@@ -148,19 +148,19 @@ export function AdMonetizationMockup() {
           className="max-w-3xl"
         >
           <p
-            className="text-sm font-semibold tracking-[0.2em] text-sky-700 uppercase"
+            className="text-hm-accent text-sm font-semibold tracking-[0.2em] uppercase"
             style={{ fontFamily: 'var(--font-mono)' }}
           >
             Sponsored moments
           </p>
           <h2
-            className="mt-2 text-3xl font-bold text-gray-900 sm:text-4xl md:text-5xl"
+            className="text-hm-ink mt-2 text-3xl font-bold sm:text-4xl md:text-5xl"
             style={{ fontFamily: 'var(--font-heading)' }}
           >
             How ads appear without killing the vibe
           </h2>
           <p
-            className="mt-4 text-lg text-gray-600 sm:text-xl"
+            className="text-hm-muted mt-4 text-lg sm:text-xl"
             style={{ fontFamily: 'var(--font-body)' }}
           >
             Light, clearly labeled sponsor spots from relevant home partners so
@@ -180,34 +180,34 @@ export function AdMonetizationMockup() {
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.08 }}
               >
-                <Card className="group flex h-full flex-col rounded-2xl border border-slate-200 bg-white shadow-md transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
+                <Card className="group border-hm-border bg-hm-surface flex h-full flex-col rounded-2xl border shadow-md transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
                   <div className="flex min-h-[190px] flex-col gap-3">
                     <div className="grid grid-cols-[auto,1fr] items-start gap-4">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-sky-800 ring-1 ring-slate-200">
+                      <div className="bg-hm-canvas text-hm-accent-strong ring-hm-border flex h-12 w-12 items-center justify-center rounded-xl ring-1">
                         <Icon className="h-5 w-5" />
                       </div>
                       <div className="leading-tight">
                         <h3
-                          className="text-xl font-semibold text-gray-900"
+                          className="text-hm-ink text-xl font-semibold"
                           style={{ fontFamily: 'var(--font-heading)' }}
                         >
                           {concept.title}
                         </h3>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-hm-faint text-sm">
                           {concept.placement}
                         </p>
                       </div>
                     </div>
 
                     <p
-                      className="text-[15px] leading-relaxed text-gray-600"
+                      className="text-hm-muted text-[15px] leading-relaxed"
                       style={{ fontFamily: 'var(--font-body)' }}
                     >
                       {concept.description}
                     </p>
                   </div>
 
-                  <div className="mt-3 flex h-[38px] w-full items-center justify-center rounded-full bg-slate-100/85 px-3 text-sm font-semibold text-slate-800 shadow-inner">
+                  <div className="bg-hm-canvas/85 text-hm-ink-soft mt-3 flex h-[38px] w-full items-center justify-center rounded-full px-3 text-sm font-semibold shadow-inner">
                     {concept.badge}
                   </div>
 

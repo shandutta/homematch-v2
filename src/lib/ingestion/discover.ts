@@ -22,6 +22,12 @@ import {
   type RapidApiCallStats,
   type RapidApiClientOptions,
 } from './zillow-client'
+import {
+  toPositiveInt,
+  toNonNegativeInt,
+  toBathrooms,
+  toYearBuilt,
+} from './coerce'
 
 type DiscoverArgs = {
   locations?: readonly string[]
@@ -46,6 +52,7 @@ type RawZillowResult = {
   livingArea?: number
   lotAreaValue?: number
   homeType?: string
+  propertyType?: string
   yearBuilt?: number
   latitude?: number
   longitude?: number
@@ -74,29 +81,63 @@ export type DiscoverSummary = {
   dryRun: boolean
 }
 
+// Map Zillow homeType -> properties.property_type CHECK values
+// (single_family|condo|townhome|multi_family|manufactured|land|other). The
+// enrich step (/property) re-derives this per listing, so discover only needs
+// a CHECK-valid value here so the thin insert doesn't fail.
 const HOME_TYPE_TO_SCHEMA: Record<string, string> = {
-  SINGLE_FAMILY: 'house',
-  TOWNHOUSE: 'townhouse',
+  SINGLE_FAMILY: 'single_family',
+  TOWNHOUSE: 'townhome',
+  TOWNHOME: 'townhome',
   CONDO: 'condo',
-  APARTMENT: 'apartment',
+  APARTMENT: 'condo',
   MULTI_FAMILY: 'multi_family',
+  MANUFACTURED: 'manufactured',
+  MOBILE: 'manufactured',
+  LOT: 'land',
+  LAND: 'land',
 }
 
-const normalizeHomeType = (raw: string | undefined): string =>
-  HOME_TYPE_TO_SCHEMA[(raw ?? '').toUpperCase()] ?? 'house'
+export const normalizeHomeType = (raw: string | undefined): string =>
+  HOME_TYPE_TO_SCHEMA[(raw ?? '').toUpperCase()] ?? 'single_family'
 
-const normalizeListingStatus = (raw: string | undefined): string => {
+// Emit only active|pending|sold — the intersection of the DB CHECK
+// (active|pending|sold|off_market|new_listing) and the Zod propertySchema enum
+// (active|pending|sold|for_sale|removed). A "new" ForSale listing is active;
+// off-market collapses to sold. Avoids rows the read parse would later reject.
+export const normalizeListingStatus = (raw: string | undefined): string => {
   const v = (raw ?? '').toLowerCase()
   if (v.includes('pend')) return 'pending'
   if (v.includes('sold') || v.includes('off')) return 'sold'
-  if (v.includes('new')) return 'new_listing'
   return 'active'
 }
 
-const isBayAreaResult = (r: RawZillowResult): boolean => {
-  if (!r.city) return false
-  return BAY_AREA_CITY_SET.has(r.city.trim().toUpperCase())
+// Defensive numeric coercion lives in ./coerce (shared with the /property
+// enrich path). Re-exported here for back-compat + the existing unit tests.
+export { toPositiveInt, toNonNegativeInt, toBathrooms, toYearBuilt }
+
+// propertyExtendedSearch returns no separate city/state/zipcode fields — only
+// a full `address` string like "50 Cascade Walk, San Francisco, CA 94116".
+// Parse the city + state + zip out of it (the city allowlist filter and the
+// schema's zip_code min(5) both depend on these).
+export function parseAddress(address: string | undefined): {
+  city: string
+  state: string
+  zip: string
+} {
+  if (!address) return { city: '', state: '', zip: '' }
+  const parts = address
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+  const last = parts[parts.length - 1] ?? ''
+  const city = parts.length >= 2 ? parts[parts.length - 2] : ''
+  const m = last.match(/\b([A-Z]{2})\b\s*(\d{5})?/)
+  return { city, state: m?.[1] ?? '', zip: m?.[2] ?? '' }
 }
+
+export const isBayAreaCity = (city: string): boolean =>
+  !!city && BAY_AREA_CITY_SET.has(city.trim().toUpperCase())
 
 export async function runDiscover(
   args: DiscoverArgs = {}
@@ -139,22 +180,37 @@ export async function runDiscover(
         pageSize: String(pageSize),
       })
 
-      let body: RawSearchResponse
-      try {
-        body = await client.get<RawSearchResponse>(
-          `/propertyExtendedSearch?${params.toString()}`
-        )
-      } catch (err) {
-        if (err instanceof RapidApiQuotaExceededError) {
+      // Fetch with one retry on transient failures (e.g. a 429 that slips
+      // past pacing). A lost page = lost inventory, so it's worth the wait.
+      let body: RawSearchResponse | null = null
+      let lastErr: unknown = null
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          body = await client.get<RawSearchResponse>(
+            `/propertyExtendedSearch?${params.toString()}`
+          )
+          lastErr = null
+          break
+        } catch (err) {
+          lastErr = err
+          if (err instanceof RapidApiQuotaExceededError) break
+          if (attempt === 0) {
+            await new Promise((r) => setTimeout(r, 2000))
+          }
+        }
+      }
+      if (lastErr) {
+        if (lastErr instanceof RapidApiQuotaExceededError) {
           console.warn(
-            `[discover] RapidAPI cap hit at ${location} page ${page}: ${err.message}`
+            `[discover] RapidAPI cap hit at ${location} page ${page}: ${lastErr.message}`
           )
           break outer
         }
         summary.errors += 1
-        console.error(`[discover] ${location} page ${page} failed`, err)
+        console.error(`[discover] ${location} page ${page} failed`, lastErr)
         continue
       }
+      if (!body) continue
 
       summary.pagesFetched += 1
       const props = body.props ?? []
@@ -162,13 +218,23 @@ export async function runDiscover(
 
       for (const result of props) {
         summary.resultsConsidered += 1
-        if (!isBayAreaResult(result)) continue
+        const parsed = parseAddress(result.address)
+        const city = result.city?.trim() || parsed.city
+        if (!isBayAreaCity(city)) continue
         summary.inAllowlist += 1
 
         if (dryRun) continue
 
         const zpid = String(result.zpid ?? '')
         if (!zpid) {
+          summary.skipped += 1
+          continue
+        }
+
+        // price is NOT NULL + CHECK (price > 0); a listing with no usable price
+        // can't be inserted, so skip it (rare — nearly all ForSale rows have one).
+        const price = toPositiveInt(result.price)
+        if (price === null) {
           summary.skipped += 1
           continue
         }
@@ -183,16 +249,18 @@ export async function runDiscover(
           zpid,
           address: result.address ?? '',
           // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-          city: (result.city ?? '').trim() as BayAreaCity,
-          state: result.state ?? 'CA',
-          zip_code: result.zipcode ?? '',
-          price: result.price ?? null,
-          bedrooms: result.bedrooms ?? null,
-          bathrooms: result.bathrooms ?? null,
-          square_feet: result.livingArea ?? null,
-          lot_size_sqft: result.lotAreaValue ?? null,
-          property_type: normalizeHomeType(result.homeType),
-          year_built: result.yearBuilt ?? null,
+          city: city as BayAreaCity,
+          state: result.state || parsed.state || 'CA',
+          zip_code: result.zipcode || parsed.zip || '',
+          price,
+          bedrooms: toNonNegativeInt(result.bedrooms),
+          bathrooms: toBathrooms(result.bathrooms),
+          square_feet: toPositiveInt(result.livingArea),
+          lot_size_sqft: toPositiveInt(result.lotAreaValue),
+          property_type: normalizeHomeType(
+            result.propertyType ?? result.homeType
+          ),
+          year_built: toYearBuilt(result.yearBuilt),
           coordinates,
           images: result.imgSrc ? [result.imgSrc] : [],
           listing_status: normalizeListingStatus(result.listingStatus),
@@ -204,8 +272,11 @@ export async function runDiscover(
         // nullable; the runtime accepts NULL but the static union still
         // says `number`. Cast through unknown until `supabase gen types`
         // is re-run against prod.
+        // .bind is required: extracting .upsert off the builder loses `this`
+        // (the builder's internal `url`) and throws "reading 'url'" at call.
+        const propsTable = supabase.from('properties')
         // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-        const upsertFn = supabase.from('properties').upsert as unknown as (
+        const upsertFn = propsTable.upsert.bind(propsTable) as unknown as (
           row: typeof insert,
           opts: { onConflict: string }
         ) => Promise<{ error: { message: string } | null }>

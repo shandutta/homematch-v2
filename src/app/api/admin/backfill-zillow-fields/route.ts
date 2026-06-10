@@ -29,7 +29,7 @@ import {
   isPaidRapidApiApproved,
   RAPIDAPI_PAID_APPROVAL_REQUIRED_MESSAGE,
 } from '@/lib/api/rapidapi-approval-gate'
-import { extractAmenities } from '@/app/api/admin/generate-vibes-zillow/route'
+import { extractAmenities } from '@/app/api/admin/generate-vibes-zillow/extract-amenities'
 
 const RAPIDAPI_HOST =
   process.env.RAPIDAPI_HOST || 'us-housing-market-data1.p.rapidapi.com'

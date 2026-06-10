@@ -68,7 +68,11 @@ function normalizeStatus(detail: DetailsResponse): {
     s.includes('removed') ||
     s === ''
   ) {
-    return { listing_status: 'removed', is_active: false }
+    // 'sold' (not 'removed'/'off_market') is the only "no longer active" value
+    // that satisfies BOTH the DB CHECK (active|pending|sold|off_market|
+    // new_listing) and the Zod propertySchema enum (active|pending|sold|
+    // for_sale|removed). Writing 'removed' violated the DB constraint.
+    return { listing_status: 'sold', is_active: false }
   }
   if (s.includes('sold')) return { listing_status: 'sold', is_active: false }
   if (

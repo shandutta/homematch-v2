@@ -13,15 +13,15 @@ import {
 // Enhanced skeleton with warm theme
 function CouplesHeroSkeleton() {
   return (
-    <Card className="relative overflow-hidden border-pink-500/20">
-      <div className="absolute inset-0 bg-gradient-to-br from-pink-500/20 via-purple-500/20 to-rose-500/20" />
+    <Card className="border-couples-primary/20 relative overflow-hidden">
+      <div className="from-couples-primary/20 via-couples-secondary/20 to-couples-accent/20 absolute inset-0 bg-gradient-to-br" />
 
       {/* Floating hearts animation during loading */}
       <div className="absolute inset-0 overflow-hidden">
         {[...Array(3)].map((_, i) => (
           <MotionDiv
             key={i}
-            className="absolute text-pink-400/10"
+            className="text-couples-primary/10 absolute"
             initial={{ x: '20%', y: '100%', scale: 0 }}
             animate={{ y: '-100%', scale: [0, 1, 0] }}
             transition={{
@@ -38,9 +38,9 @@ function CouplesHeroSkeleton() {
 
       <CardContent className="relative p-8 text-center">
         <div className="mb-4 flex items-center justify-center gap-2">
-          <Heart className="h-8 w-8 text-pink-400/30" />
+          <Heart className="text-couples-primary/30 h-8 w-8" />
           <Skeleton className="h-8 w-48 bg-white/10" />
-          <Heart className="h-8 w-8 text-rose-400/30" />
+          <Heart className="text-couples-accent/30 h-8 w-8" />
         </div>
 
         <Skeleton className="mx-auto mb-6 h-6 w-96 bg-white/10" />
@@ -61,11 +61,11 @@ function CouplesHeroSkeleton() {
 
 function CouplesMutualLikesSkeleton() {
   return (
-    <Card className="card-glassmorphism-style border-pink-500/20">
+    <Card className="card-glassmorphism-style border-couples-primary/20">
       <CardHeader>
         <div className="flex items-center gap-2">
-          <Heart className="h-6 w-6 fill-current text-pink-400/30" />
-          <Users className="absolute -top-1 -right-1 h-4 w-4 text-purple-400/30" />
+          <Heart className="text-couples-primary/30 h-6 w-6 fill-current" />
+          <Users className="text-couples-secondary/30 absolute -top-1 -right-1 h-4 w-4" />
           <Skeleton className="h-6 w-32 bg-white/10" />
         </div>
       </CardHeader>
@@ -78,7 +78,7 @@ function CouplesMutualLikesSkeleton() {
               initial="initial"
               animate="animate"
               transition={{ ...normalTransition, delay: i * 0.1 }}
-              className="rounded-lg border border-pink-500/10 bg-gradient-to-br from-pink-500/5 via-purple-500/5 to-rose-500/5 p-4"
+              className="border-couples-primary/10 from-couples-primary/5 via-couples-secondary/5 to-couples-accent/5 rounded-lg border bg-gradient-to-br p-4"
             >
               <div className="flex gap-4">
                 <Skeleton className="h-20 w-20 flex-shrink-0 rounded-lg bg-white/10" />
@@ -147,7 +147,7 @@ function CouplesStatsSkeleton() {
               initial="initial"
               animate="animate"
               transition={{ ...normalTransition, delay: i * 0.1 }}
-              className="rounded-lg bg-gradient-to-br from-pink-500/5 to-purple-500/5 p-4 text-center"
+              className="from-couples-primary/5 to-couples-secondary/5 rounded-lg bg-gradient-to-br p-4 text-center"
             >
               <Skeleton className="mx-auto mb-2 h-8 w-8 rounded bg-white/10" />
               <Skeleton className="mx-auto mb-1 h-6 w-8 bg-white/10" />

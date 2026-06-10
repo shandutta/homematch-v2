@@ -212,7 +212,7 @@ function PropertyCard({
       animate={{ scale: 1 - index * 0.05, zIndex: 100 - index }}
       transition={{ type: 'spring', stiffness: 300, damping: 20 }}
     >
-      <div className="h-full overflow-hidden rounded-2xl bg-white shadow-xl">
+      <div className="bg-hm-surface h-full overflow-hidden rounded-2xl shadow-xl">
         {/* Property Image */}
         <div className="relative h-[300px]">
           <Image
@@ -235,7 +235,7 @@ function PropertyCard({
 
           {/* Price Tag - More prominent display */}
           <div className="absolute bottom-3 left-3 rounded-xl bg-white/95 px-4 py-2 shadow-lg backdrop-blur-sm">
-            <p className="text-xl font-bold text-gray-900">{property.price}</p>
+            <p className="text-hm-ink text-xl font-bold">{property.price}</p>
           </div>
 
           {/* Like/Pass Indicators — improved spacing and sizing */}
@@ -285,10 +285,10 @@ function PropertyCard({
         {/* Property Details with improved styling */}
         <div className="p-4">
           <div className="mb-3">
-            <h3 className="text-lg font-semibold text-gray-900">
+            <h3 className="text-hm-ink text-lg font-semibold">
               {property.location}
             </h3>
-            <div className="mt-1 flex items-center gap-3 text-sm text-gray-600">
+            <div className="text-hm-muted mt-1 flex items-center gap-3 text-sm">
               <span>{property.beds} beds</span>
               <span>•</span>
               <span>{property.baths} baths</span>

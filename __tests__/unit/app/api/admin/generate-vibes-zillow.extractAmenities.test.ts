@@ -8,7 +8,7 @@
  * hallucination loop (Section 1 of the audit) by giving the vibe generator
  * real content data to ground its claims in.
  */
-import { extractAmenities } from '@/app/api/admin/generate-vibes-zillow/route'
+import { extractAmenities } from '@/app/api/admin/generate-vibes-zillow/extract-amenities'
 
 describe('extractAmenities', () => {
   it('returns null when nothing extractable is present', () => {

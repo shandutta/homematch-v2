@@ -115,6 +115,23 @@ export const propertySchema = z.object({
     .enum(['ok', 'no_images'])
     .nullable()
     .optional(),
+  // Listing-enrichment columns (captured inline from RapidAPI /property).
+  // jsonb payloads are validated loosely (array of objects) since their shape
+  // is provider-defined; the app reads specific fields defensively.
+  price_history: z.array(z.unknown()).nullable().optional(),
+  tax_history: z.array(z.unknown()).nullable().optional(),
+  schools: z.array(z.unknown()).nullable().optional(),
+  zestimate: numberFromString(z.number().int().min(0)).nullable().optional(),
+  rent_zestimate: numberFromString(z.number().int().min(0))
+    .nullable()
+    .optional(),
+  days_on_market: numberFromString(z.number().int().min(0))
+    .nullable()
+    .optional(),
+  listed_at: timestampSchema.nullable().optional(),
+  hoa_fee: numberFromString(z.number().min(0)).nullable().optional(),
+  broker_name: z.string().nullable().optional(),
+  agent_name: z.string().nullable().optional(),
 })
 
 export const propertyInsertSchema = propertySchema

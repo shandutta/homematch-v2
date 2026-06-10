@@ -56,7 +56,7 @@ export function AcceptInviteForm({
         type="button"
         onClick={handleAccept}
         disabled={isPending}
-        className="w-full bg-slate-900 text-white hover:bg-slate-800"
+        className="bg-hm-accent hover:bg-hm-accent-strong w-full text-white"
       >
         {isPending ? 'Joining household...' : 'Accept invitation'}
       </Button>

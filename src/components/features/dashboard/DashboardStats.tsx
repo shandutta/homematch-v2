@@ -26,9 +26,9 @@ const StatTile = ({
 }) => {
   const colorClasses = {
     amber: {
-      icon: 'text-hm-amber-400',
+      icon: 'text-hm-accent',
       glow: 'group-hover:shadow-[0_0_30px_rgba(251,191,36,0.15)]',
-      border: 'group-hover:border-hm-amber-400/20',
+      border: 'group-hover:border-hm-accent/20',
     },
     success: {
       icon: 'text-hm-success',
@@ -48,17 +48,17 @@ const StatTile = ({
     <Link
       href={href}
       className={cn(
-        'group bg-hm-obsidian-900 block min-w-[160px] snap-center rounded-xl border border-white/5 p-3 transition-all duration-300 hover:-translate-y-0.5 sm:min-w-0 sm:p-5',
+        'group bg-hm-surface block min-w-[160px] snap-center rounded-xl border border-white/5 p-3 transition-all duration-300 hover:-translate-y-0.5 sm:min-w-0 sm:p-5',
         colors.glow,
         colors.border
       )}
     >
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-hm-stone-500 text-[10px] font-medium tracking-widest uppercase sm:text-xs">
+          <p className="text-hm-faint text-[10px] font-medium tracking-widest uppercase sm:text-xs">
             {label}
           </p>
-          <div className="font-display text-hm-stone-200 mt-0.5 text-xl font-medium tracking-tight sm:mt-1 sm:text-3xl">
+          <div className="font-display text-hm-ink mt-0.5 text-xl font-medium tracking-tight sm:mt-1 sm:text-3xl">
             {value !== undefined ? (
               value
             ) : (

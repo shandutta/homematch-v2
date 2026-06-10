@@ -102,7 +102,7 @@ export class CouplesErrorBoundary extends Component<Props, State> {
               <div className="flex justify-center gap-2">
                 <Button
                   onClick={this.handleRetry}
-                  className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600"
+                  className="from-couples-primary to-couples-secondary bg-gradient-to-r hover:opacity-90"
                   size="sm"
                 >
                   <RefreshCw className="mr-2 h-4 w-4" />
@@ -113,7 +113,7 @@ export class CouplesErrorBoundary extends Component<Props, State> {
                   variant="outline"
                   onClick={() => (window.location.href = '/dashboard')}
                   size="sm"
-                  className="border-pink-500/30 text-pink-400 hover:bg-pink-500/10"
+                  className="border-couples-primary/30 text-couples-primary hover:bg-couples-primary/10"
                 >
                   Go to Dashboard
                 </Button>

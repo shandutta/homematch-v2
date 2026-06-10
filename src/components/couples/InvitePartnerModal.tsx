@@ -218,7 +218,7 @@ export function InvitePartnerModal({
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
-            <UserPlus className="h-5 w-5 text-purple-500" />
+            <UserPlus className="text-couples-primary h-5 w-5" />
             Invite Someone
           </DialogTitle>
           <DialogDescription>
@@ -236,20 +236,20 @@ export function InvitePartnerModal({
 
           {/* Search for existing users */}
           <div className="space-y-3">
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-hm-ink-soft text-sm font-medium">
               Find a household member on HomeMatch
             </label>
             {selectedUser ? (
-              <div className="flex items-center justify-between rounded-lg border border-purple-200 bg-purple-50 p-3">
+              <div className="border-couples-primary/30 bg-couples-primary/10 flex items-center justify-between rounded-lg border p-3">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-200">
-                    <User className="h-5 w-5 text-purple-600" />
+                  <div className="bg-couples-primary/20 flex h-10 w-10 items-center justify-center rounded-full">
+                    <User className="text-couples-primary h-5 w-5" />
                   </div>
                   <div>
-                    <p className="font-medium text-slate-900">
+                    <p className="text-hm-ink font-medium">
                       {selectedUser.display_name || selectedUser.email}
                     </p>
-                    <p className="text-sm text-slate-600">
+                    <p className="text-hm-muted text-sm">
                       {selectedUser.email}
                     </p>
                   </div>
@@ -258,14 +258,14 @@ export function InvitePartnerModal({
                   variant="ghost"
                   size="sm"
                   onClick={handleClearSelectedUser}
-                  className="text-slate-600 hover:text-slate-700"
+                  className="text-hm-muted hover:text-hm-ink-soft"
                 >
                   Change
                 </Button>
               </div>
             ) : (
               <div className="relative">
-                <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <Search className="text-hm-faint absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
                 <Input
                   placeholder="Enter their full email address"
                   value={searchQuery}
@@ -273,29 +273,29 @@ export function InvitePartnerModal({
                   className="pl-10"
                 />
                 {searchLoading && (
-                  <Loader2 className="absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 animate-spin text-slate-400" />
+                  <Loader2 className="text-hm-faint absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 animate-spin" />
                 )}
               </div>
             )}
 
             {/* Search results dropdown */}
             {searchResults.length > 0 && !selectedUser && (
-              <div className="rounded-lg border border-slate-200 bg-white shadow-lg">
+              <div className="border-hm-border bg-hm-surface-raised rounded-lg border shadow-lg">
                 {searchResults.map((user) => (
                   <button
                     key={user.id}
                     onClick={() => handleSelectUser(user)}
-                    className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-slate-50"
+                    className="hover:bg-hm-canvas flex w-full items-center gap-3 px-4 py-3 text-left transition"
                   >
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100">
-                      <User className="h-4 w-4 text-slate-600" />
+                    <div className="bg-hm-surface flex h-8 w-8 items-center justify-center rounded-full">
+                      <User className="text-hm-muted h-4 w-4" />
                     </div>
                     <div>
-                      <p className="font-medium text-slate-900">
+                      <p className="text-hm-ink font-medium">
                         {user.display_name || user.email}
                       </p>
                       {user.display_name && (
-                        <p className="text-sm text-slate-600">{user.email}</p>
+                        <p className="text-hm-muted text-sm">{user.email}</p>
                       )}
                     </div>
                   </button>
@@ -307,7 +307,7 @@ export function InvitePartnerModal({
               searchResults.length === 0 &&
               !searchLoading &&
               !selectedUser && (
-                <p className="text-sm text-slate-600">
+                <p className="text-hm-muted text-sm">
                   No users found. You can still invite them by email below.
                 </p>
               )}
@@ -315,10 +315,10 @@ export function InvitePartnerModal({
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-slate-200" />
+              <span className="border-hm-border w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-slate-600">
+              <span className="bg-hm-surface-raised text-hm-muted px-2">
                 Or invite by email
               </span>
             </div>
@@ -328,7 +328,7 @@ export function InvitePartnerModal({
           <div className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                <label className="text-hm-ink-soft mb-1.5 block text-sm font-medium">
                   Name
                 </label>
                 <Input
@@ -339,7 +339,7 @@ export function InvitePartnerModal({
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                <label className="text-hm-ink-soft mb-1.5 block text-sm font-medium">
                   Email address
                 </label>
                 <Input
@@ -353,14 +353,14 @@ export function InvitePartnerModal({
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-slate-700">
+              <label className="text-hm-ink-soft mb-1.5 block text-sm font-medium">
                 Personal message (optional)
               </label>
               <textarea
                 placeholder="Add a personal note..."
                 value={inviteMessage}
                 onChange={(e) => setInviteMessage(e.target.value)}
-                className="w-full rounded-md border border-slate-200 bg-white p-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-purple-400 focus:ring-1 focus:ring-purple-400 focus:outline-none"
+                className="border-hm-border bg-hm-surface-raised text-hm-ink placeholder:text-hm-faint focus:border-hm-focus focus:ring-hm-focus w-full rounded-md border p-3 text-sm focus:ring-1 focus:outline-none"
                 rows={2}
               />
             </div>
@@ -368,7 +368,7 @@ export function InvitePartnerModal({
             <Button
               onClick={handleInviteSubmit}
               disabled={inviteSubmitting || !inviteEmail.trim()}
-              className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+              className="from-couples-primary to-couples-secondary w-full bg-gradient-to-r hover:opacity-90"
             >
               {inviteSubmitting ? (
                 <>
@@ -388,32 +388,32 @@ export function InvitePartnerModal({
           {(pendingInvites.length > 0 || invitesLoading) && (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-slate-700">
+                <label className="text-hm-ink-soft text-sm font-medium">
                   Pending invitations
                 </label>
                 {invitesLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+                  <Loader2 className="text-hm-faint h-4 w-4 animate-spin" />
                 ) : (
                   <Badge variant="secondary">{pendingInvites.length}</Badge>
                 )}
               </div>
               {invitesLoading ? (
                 <div className="flex items-center justify-center py-4">
-                  <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
+                  <Loader2 className="text-hm-faint h-5 w-5 animate-spin" />
                 </div>
               ) : (
                 <div className="space-y-2">
                   {pendingInvites.map((invite) => (
                     <div
                       key={invite.id}
-                      className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-3"
+                      className="border-hm-border bg-hm-canvas flex items-center justify-between rounded-lg border p-3"
                     >
                       <div>
-                        <p className="font-medium text-slate-900">
+                        <p className="text-hm-ink font-medium">
                           {invite.invited_name || invite.invited_email}
                         </p>
                         {invite.invited_name && (
-                          <p className="text-sm text-slate-600">
+                          <p className="text-hm-muted text-sm">
                             {invite.invited_email}
                           </p>
                         )}
@@ -438,12 +438,12 @@ export function InvitePartnerModal({
           )}
 
           {/* Alternative: Share household code */}
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-            <p className="mb-2 text-sm font-medium text-slate-700">
+          <div className="border-hm-border bg-hm-canvas rounded-lg border p-4">
+            <p className="text-hm-ink-soft mb-2 text-sm font-medium">
               Or share your household code
             </p>
             <div className="flex items-center gap-2">
-              <code className="flex-1 rounded bg-white px-3 py-2 font-mono text-sm text-slate-800">
+              <code className="bg-hm-surface-raised text-hm-ink-soft flex-1 rounded px-3 py-2 font-mono text-sm">
                 {householdId}
               </code>
               <Button
@@ -460,7 +460,7 @@ export function InvitePartnerModal({
                 )}
               </Button>
             </div>
-            <p className="mt-2 text-xs text-slate-600">
+            <p className="text-hm-muted mt-2 text-xs">
               They can use this code to join directly from their profile
               settings.
             </p>

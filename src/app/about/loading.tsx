@@ -2,7 +2,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 export default function Loading() {
   return (
-    <main className="bg-slate-50 text-slate-900">
+    <main className="bg-hm-canvas text-hm-ink">
       <div className="mx-auto flex max-w-4xl flex-col gap-10 px-4 py-12 sm:px-6 sm:py-16">
         <div className="space-y-4">
           <Skeleton className="h-3 w-14" />
@@ -13,7 +13,7 @@ export default function Loading() {
         {[0, 1, 2, 3].map((i) => (
           <div
             key={i}
-            className="space-y-4 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8"
+            className="bg-hm-surface-raised ring-hm-border space-y-4 rounded-2xl p-6 shadow-sm ring-1 sm:p-8"
           >
             <Skeleton className="h-6 w-48" />
             <div className="space-y-2">

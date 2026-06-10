@@ -108,10 +108,10 @@ export function EnhancedPropertyCard({
       data-testid="property-card"
     >
       {/* Image Section */}
-      <div className="relative h-64 bg-gradient-to-br from-slate-100 to-slate-200">
+      <div className="from-hm-surface to-hm-canvas relative h-64 bg-gradient-to-br">
         {isImageLoading && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="h-12 w-12 animate-pulse rounded-full bg-gradient-to-r from-blue-400 to-amber-500"></div>
+            <div className="from-hm-accent to-hm-accent-strong h-12 w-12 animate-pulse rounded-full bg-gradient-to-r"></div>
           </div>
         )}
 
@@ -127,12 +127,12 @@ export function EnhancedPropertyCard({
         />
 
         {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
         {/* Price Badge */}
         <div className="absolute bottom-4 left-4">
           <Badge
-            className="bg-white/95 p-3 text-lg font-bold text-slate-900 shadow-lg backdrop-blur-sm"
+            className="text-hm-ink bg-white/95 p-3 text-lg font-bold shadow-lg backdrop-blur-sm"
             data-testid="property-price"
           >
             {formatPrice(property.price)}
@@ -157,7 +157,7 @@ export function EnhancedPropertyCard({
         {isMutualLike && (
           <div className="absolute top-4 right-4">
             <Badge
-              className="bg-gradient-to-r from-pink-500 to-purple-500 text-white shadow-lg backdrop-blur-sm"
+              className="from-couples-primary to-couples-secondary bg-gradient-to-r text-white shadow-lg backdrop-blur-sm"
               data-testid="mutual-like-badge"
             >
               <Heart className="mr-1 h-3 w-3 fill-current" />
@@ -172,7 +172,7 @@ export function EnhancedPropertyCard({
           <>
             <button
               onClick={prevImage}
-              className="absolute top-1/2 left-2 inline-flex h-11 min-h-[44px] w-11 min-w-[44px] -translate-y-1/2 touch-manipulation items-center justify-center rounded-full bg-slate-900/60 text-white transition-all hover:bg-slate-900/80 focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
+              className="absolute top-1/2 left-2 inline-flex h-11 min-h-[44px] w-11 min-w-[44px] -translate-y-1/2 touch-manipulation items-center justify-center rounded-full bg-black/60 text-white transition-all hover:bg-black/80 focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
               aria-label="Previous image"
               data-testid="previous-image-button"
             >
@@ -180,7 +180,7 @@ export function EnhancedPropertyCard({
             </button>
             <button
               onClick={nextImage}
-              className="absolute top-1/2 right-2 inline-flex h-11 min-h-[44px] w-11 min-w-[44px] -translate-y-1/2 touch-manipulation items-center justify-center rounded-full bg-slate-900/60 text-white transition-all hover:bg-slate-900/80 focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
+              className="absolute top-1/2 right-2 inline-flex h-11 min-h-[44px] w-11 min-w-[44px] -translate-y-1/2 touch-manipulation items-center justify-center rounded-full bg-black/60 text-white transition-all hover:bg-black/80 focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
               aria-label="Next image"
               data-testid="next-image-button"
             >
@@ -189,7 +189,7 @@ export function EnhancedPropertyCard({
 
             {/* Image Counter */}
             <div
-              className="absolute bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-md bg-slate-900/70 p-1 text-xs text-white"
+              className="absolute bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-md bg-black/70 p-1 text-xs text-white"
               data-testid="image-counter"
             >
               <Camera className="h-3 w-3" />

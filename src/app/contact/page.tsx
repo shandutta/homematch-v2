@@ -1,6 +1,9 @@
-import Link from 'next/link'
 import { createPublicRouteMetadata } from '@/lib/seo/route-metadata'
 import { MarketingPageHeader } from '@/components/marketing/MarketingPageHeader'
+import { EditorialPageShell } from '@/components/editorial/EditorialPageShell'
+import { EditorialPageHeader } from '@/components/editorial/EditorialPageHeader'
+import { EditorialSection } from '@/components/editorial/EditorialSection'
+import { EditorialLink } from '@/components/editorial/EditorialLink'
 
 export const metadata = createPublicRouteMetadata({
   title: 'Contact | HomeMatch',
@@ -11,74 +14,49 @@ export const metadata = createPublicRouteMetadata({
 
 export default function ContactPage() {
   return (
-    <main className="bg-slate-50 text-slate-900">
-      <MarketingPageHeader />
-      <div className="mx-auto flex max-w-4xl flex-col gap-10 px-4 py-12 sm:px-6 sm:py-16">
-        <header className="space-y-4">
-          <p className="text-xs font-semibold tracking-[0.2em] text-slate-500 uppercase">
-            Contact
-          </p>
-          <h1 className="text-3xl font-bold sm:text-4xl">Reach HomeMatch</h1>
-          <p className="max-w-3xl text-lg text-slate-600">
-            We’re a small team and we read every message. Choose the right inbox
-            below and we’ll get back as soon as we can.
-          </p>
-        </header>
+    <EditorialPageShell header={<MarketingPageHeader />}>
+      <EditorialPageHeader
+        eyebrow="Contact"
+        title="Reach HomeMatch"
+        lead="We’re a small team and we read every message. Choose the right inbox below and we’ll get back as soon as we can."
+      />
 
-        <section className="space-y-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
-          <h2 className="text-xl font-semibold">Email</h2>
-          <ul className="list-disc space-y-3 pl-5 text-slate-700">
-            <li>
-              Support & feedback:{' '}
-              <Link
-                href="mailto:hello@homematch.pro"
-                className="text-sky-600 underline"
-              >
-                hello@homematch.pro
-              </Link>
-            </li>
-            <li>
-              Privacy requests (access, deletion, correction):{' '}
-              <Link
-                href="mailto:privacy@homematch.pro"
-                className="text-sky-600 underline"
-              >
-                privacy@homematch.pro
-              </Link>
-            </li>
-            <li>
-              Legal notices:{' '}
-              <Link
-                href="mailto:legal@homematch.pro"
-                className="text-sky-600 underline"
-              >
-                legal@homematch.pro
-              </Link>
-            </li>
-          </ul>
-        </section>
+      <EditorialSection title="Email">
+        <ul className="text-hm-ink-soft list-disc space-y-3 pl-5">
+          <li>
+            Support &amp; feedback:{' '}
+            <EditorialLink href="mailto:hello@homematch.pro">
+              hello@homematch.pro
+            </EditorialLink>
+          </li>
+          <li>
+            Privacy requests (access, deletion, correction):{' '}
+            <EditorialLink href="mailto:privacy@homematch.pro">
+              privacy@homematch.pro
+            </EditorialLink>
+          </li>
+          <li>
+            Legal notices:{' '}
+            <EditorialLink href="mailto:legal@homematch.pro">
+              legal@homematch.pro
+            </EditorialLink>
+          </li>
+        </ul>
+      </EditorialSection>
 
-        <section className="space-y-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
-          <h2 className="text-xl font-semibold">Policies</h2>
-          <ul className="list-disc space-y-3 pl-5 text-slate-700">
-            <li>
-              <Link href="/privacy" className="text-sky-600 underline">
-                Privacy Policy
-              </Link>
-            </li>
-            <li>
-              <Link href="/terms" className="text-sky-600 underline">
-                Terms of Service
-              </Link>
-            </li>
-            <li>
-              <Link href="/cookies" className="text-sky-600 underline">
-                Cookie Policy
-              </Link>
-            </li>
-          </ul>
-        </section>
-      </div>
-    </main>
+      <EditorialSection title="Policies">
+        <ul className="text-hm-ink-soft list-disc space-y-3 pl-5">
+          <li>
+            <EditorialLink href="/privacy">Privacy Policy</EditorialLink>
+          </li>
+          <li>
+            <EditorialLink href="/terms">Terms of Service</EditorialLink>
+          </li>
+          <li>
+            <EditorialLink href="/cookies">Cookie Policy</EditorialLink>
+          </li>
+        </ul>
+      </EditorialSection>
+    </EditorialPageShell>
   )
 }

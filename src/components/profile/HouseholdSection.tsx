@@ -51,7 +51,7 @@ const inviteStatusStyles: Record<
   revoked: {
     label: 'Revoked',
     bg: 'bg-white/5',
-    text: 'text-hm-stone-400',
+    text: 'text-hm-muted',
     border: 'border-white/10',
   },
   expired: {
@@ -76,7 +76,7 @@ const formatDate = (value: string | null) => {
 }
 
 const inputStyles =
-  'w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-hm-stone-200 placeholder:text-hm-stone-500 transition-all focus:border-amber-500/50 focus:bg-white/[0.07] focus:outline-none focus:ring-2 focus:ring-amber-500/20'
+  'w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-hm-ink placeholder:text-hm-muted transition-all focus:border-amber-500/50 focus:bg-white/[0.07] focus:outline-none focus:ring-2 focus:ring-amber-500/20'
 
 export function HouseholdSection({ profile }: HouseholdSectionProps) {
   const [loading, setLoading] = useState(false)
@@ -291,10 +291,10 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
               <Users className="h-5 w-5 text-emerald-400" />
             </div>
             <div>
-              <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">
+              <h2 className="font-heading text-hm-ink text-xl font-semibold">
                 Current Household
               </h2>
-              <p className="text-hm-stone-500 text-sm">
+              <p className="text-hm-muted text-sm">
                 Manage your household settings
               </p>
             </div>
@@ -309,7 +309,7 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
                 </p>
               </div>
               <p
-                className="font-heading text-hm-stone-200 mt-2 text-2xl font-semibold"
+                className="font-heading text-hm-ink mt-2 text-2xl font-semibold"
                 data-testid="household-name"
               >
                 {profile.household.name}
@@ -317,12 +317,12 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
             </div>
 
             <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
-              <p className="text-hm-stone-500 text-xs font-medium tracking-[0.15em] uppercase">
+              <p className="text-hm-muted text-xs font-medium tracking-[0.15em] uppercase">
                 Invite Code
               </p>
               <div className="mt-2 flex items-center gap-2">
                 <code
-                  className="text-hm-stone-300 flex-1 truncate rounded-lg bg-white/5 px-3 py-2 font-mono text-sm"
+                  className="text-hm-ink-soft flex-1 truncate rounded-lg bg-white/5 px-3 py-2 font-mono text-sm"
                   data-testid="household-id"
                 >
                   {profile.household.id}
@@ -330,7 +330,7 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
                 <button
                   type="button"
                   onClick={copyHouseholdCode}
-                  className="text-hm-stone-400 flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 bg-white/5 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
+                  className="text-hm-muted flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 bg-white/5 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
                   data-testid="copy-household-code"
                   aria-label="Copy household code"
                 >
@@ -357,7 +357,7 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
                   </AnimatePresence>
                 </button>
               </div>
-              <p className="text-hm-stone-500 mt-2 text-xs">
+              <p className="text-hm-muted mt-2 text-xs">
                 Share this code or send an invitation link so someone can join
                 instantly.
               </p>
@@ -380,14 +380,14 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
         <div className="card-luxury overflow-hidden p-6 sm:p-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/10">
-                <MailPlus className="h-5 w-5 text-sky-400" />
+              <div className="bg-hm-accent/10 flex h-10 w-10 items-center justify-center rounded-xl">
+                <MailPlus className="text-hm-accent h-5 w-5" />
               </div>
               <div>
-                <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">
+                <h2 className="font-heading text-hm-ink text-xl font-semibold">
                   Invite Collaborators
                 </h2>
-                <p className="text-hm-stone-500 text-sm">
+                <p className="text-hm-muted text-sm">
                   Add roommates, friends, or family
                 </p>
               </div>
@@ -405,14 +405,12 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
             <div className="rounded-xl border border-white/5 bg-white/[0.02] p-5">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-hm-stone-200 font-medium">
-                    Send a new invite
-                  </p>
-                  <p className="text-hm-stone-500 text-sm">
+                  <p className="text-hm-ink font-medium">Send a new invite</p>
+                  <p className="text-hm-muted text-sm">
                     Generate a private link someone can use to join.
                   </p>
                 </div>
-                <MailPlus className="text-hm-stone-500 hidden h-5 w-5 sm:block" />
+                <MailPlus className="text-hm-muted hidden h-5 w-5 sm:block" />
               </div>
 
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -445,7 +443,7 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
                 <Button
                   onClick={handleInviteSubmit}
                   disabled={inviteSubmitting}
-                  className="bg-gradient-to-r from-sky-500 to-sky-600 px-5 text-white shadow-lg shadow-sky-500/20 transition-all hover:shadow-sky-500/30"
+                  className="from-hm-accent to-hm-accent-strong shadow-hm-accent/20 hover:shadow-hm-accent/30 bg-gradient-to-r px-5 text-white shadow-lg transition-all"
                   data-testid="send-invite-button"
                 >
                   {inviteSubmitting ? (
@@ -469,7 +467,7 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
                       setInviteName('')
                       setInviteMessage('')
                     }}
-                    className="text-hm-stone-400 hover:text-hm-stone-200 hover:bg-white/5"
+                    className="text-hm-muted hover:text-hm-ink hover:bg-white/5"
                   >
                     Clear
                   </Button>
@@ -479,7 +477,7 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
 
             {/* Invitations list */}
             <div className="space-y-3">
-              <p className="text-hm-stone-400 text-xs font-medium tracking-[0.15em] uppercase">
+              <p className="text-hm-muted text-xs font-medium tracking-[0.15em] uppercase">
                 Invitations
               </p>
               {invitesLoading ? (
@@ -493,8 +491,8 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
                 </div>
               ) : invites.length === 0 ? (
                 <div className="rounded-xl border border-dashed border-white/10 bg-white/[0.02] p-6 text-center">
-                  <Users className="text-hm-stone-500 mx-auto h-8 w-8" />
-                  <p className="text-hm-stone-400 mt-2 text-sm">
+                  <Users className="text-hm-muted mx-auto h-8 w-8" />
+                  <p className="text-hm-muted mt-2 text-sm">
                     No invitations yet. Add an email above to get started.
                   </p>
                 </div>
@@ -522,13 +520,13 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
                       >
                         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                           <div className="min-w-0 flex-1">
-                            <p className="text-hm-stone-200 truncate font-medium">
+                            <p className="text-hm-ink truncate font-medium">
                               {invite.invited_name || invite.invited_email}
                             </p>
-                            <p className="text-hm-stone-500 text-sm">
+                            <p className="text-hm-muted text-sm">
                               {invite.invited_email}
                             </p>
-                            <div className="text-hm-stone-500 mt-1 flex items-center gap-1 text-xs">
+                            <div className="text-hm-muted mt-1 flex items-center gap-1 text-xs">
                               <Clock className="h-3 w-3" />
                               Expires {formatDate(invite.expires_at)}
                             </div>
@@ -541,7 +539,7 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
                             </span>
                             <button
                               onClick={() => handleCopyInviteLink(invite.token)}
-                              className="text-hm-stone-400 flex h-8 items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 text-xs transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
+                              className="text-hm-muted flex h-8 items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 text-xs transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
                             >
                               <AnimatePresence mode="wait">
                                 {linkCopied === invite.token ? (
@@ -572,7 +570,7 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
                             {invite.status === 'pending' && (
                               <button
                                 onClick={() => handleRevokeInvite(invite.id)}
-                                className="text-hm-stone-400 flex h-8 items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 text-xs transition-all hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-300"
+                                className="text-hm-muted flex h-8 items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 text-xs transition-all hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-300"
                               >
                                 <X className="h-3 w-3" />
                                 Revoke
@@ -581,7 +579,7 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
                           </div>
                         </div>
                         {invite.message && (
-                          <p className="text-hm-stone-400 mt-3 rounded-lg bg-white/[0.03] p-3 text-sm italic">
+                          <p className="text-hm-muted mt-3 rounded-lg bg-white/[0.03] p-3 text-sm italic">
                             &ldquo;{invite.message}&rdquo;
                           </p>
                         )}
@@ -616,17 +614,17 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
             <Home className="h-5 w-5 text-amber-400" />
           </div>
           <div>
-            <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">
+            <h2 className="font-heading text-hm-ink text-xl font-semibold">
               Create a Household
             </h2>
-            <p className="text-hm-stone-500 text-sm">
+            <p className="text-hm-muted text-sm">
               Start collaborating with family
             </p>
           </div>
         </div>
 
         <div className="mt-6 space-y-4" data-testid="create-household-form">
-          <p className="text-hm-stone-400 text-sm">
+          <p className="text-hm-muted text-sm">
             Create a household to share property searches and preferences with
             roommates, friends, or family members.
           </p>
@@ -661,21 +659,21 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
       {/* Join Household Card */}
       <div className="card-luxury overflow-hidden p-6 sm:p-8">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/10">
-            <Users className="h-5 w-5 text-sky-400" />
+          <div className="bg-hm-accent/10 flex h-10 w-10 items-center justify-center rounded-xl">
+            <Users className="text-hm-accent h-5 w-5" />
           </div>
           <div>
-            <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">
+            <h2 className="font-heading text-hm-ink text-xl font-semibold">
               Join a Household
             </h2>
-            <p className="text-hm-stone-500 text-sm">
+            <p className="text-hm-muted text-sm">
               Connect with an existing group
             </p>
           </div>
         </div>
 
         <div className="mt-6 space-y-4">
-          <p className="text-hm-stone-400 text-sm">
+          <p className="text-hm-muted text-sm">
             Have a household code? Enter it below to join an existing household.
           </p>
           <input
@@ -688,7 +686,7 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
             onClick={joinHousehold}
             disabled={loading}
             variant="outline"
-            className="text-hm-stone-300 border-white/10 bg-white/5 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
+            className="text-hm-ink-soft border-white/10 bg-white/5 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
           >
             {loading ? (
               <>

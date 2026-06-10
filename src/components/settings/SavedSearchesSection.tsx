@@ -101,24 +101,24 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
         icon: MapPin,
         text: `${location}`,
         key: 'location',
-        color: 'text-sky-400',
-        bg: 'bg-sky-500/10',
+        color: 'text-hm-accent',
+        bg: 'bg-hm-accent/10',
       })
     } else if (neighborhoods.length > 0) {
       parts.push({
         icon: MapPin,
         text: `${neighborhoods.length} neighborhoods`,
         key: 'neighborhoods',
-        color: 'text-sky-400',
-        bg: 'bg-sky-500/10',
+        color: 'text-hm-accent',
+        bg: 'bg-hm-accent/10',
       })
     } else if (cities.length > 0) {
       parts.push({
         icon: MapPin,
         text: `${cities.length} cities`,
         key: 'cities',
-        color: 'text-sky-400',
-        bg: 'bg-sky-500/10',
+        color: 'text-hm-accent',
+        bg: 'bg-hm-accent/10',
       })
     }
     const priceRange = Array.isArray(filters.priceRange)
@@ -142,8 +142,8 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
         icon: Bed,
         text: `${bedrooms}+ beds`,
         key: 'bedrooms',
-        color: 'text-violet-400',
-        bg: 'bg-violet-500/10',
+        color: 'text-hm-accent-strong',
+        bg: 'bg-hm-accent-strong/10',
       })
     }
     const propertyTypes = Array.isArray(filters.propertyTypes)
@@ -171,20 +171,18 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/10">
-            <Search className="h-5 w-5 text-sky-400" />
+          <div className="bg-hm-accent/10 flex h-10 w-10 items-center justify-center rounded-xl">
+            <Search className="text-hm-accent h-5 w-5" />
           </div>
           <div>
-            <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">
+            <h2 className="font-heading text-hm-ink text-xl font-semibold">
               Saved Searches
             </h2>
-            <p className="text-hm-stone-500 text-sm">
-              Manage your search alerts
-            </p>
+            <p className="text-hm-muted text-sm">Manage your search alerts</p>
           </div>
         </div>
         <div className="flex items-center justify-center py-12">
-          <div className="text-hm-stone-400 flex items-center gap-3">
+          <div className="text-hm-muted flex items-center gap-3">
             <RefreshCw className="h-5 w-5 animate-spin" />
             <span>Loading saved searches...</span>
           </div>
@@ -197,31 +195,29 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/10">
-            <Search className="h-5 w-5 text-sky-400" />
+          <div className="bg-hm-accent/10 flex h-10 w-10 items-center justify-center rounded-xl">
+            <Search className="text-hm-accent h-5 w-5" />
           </div>
           <div>
-            <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">
+            <h2 className="font-heading text-hm-ink text-xl font-semibold">
               Saved Searches
             </h2>
-            <p className="text-hm-stone-500 text-sm">
-              Manage your search alerts
-            </p>
+            <p className="text-hm-muted text-sm">Manage your search alerts</p>
           </div>
         </div>
         <div className="rounded-xl border border-dashed border-white/10 bg-white/[0.02] p-8 text-center">
-          <Search className="text-hm-stone-500 mx-auto h-10 w-10" />
-          <p className="text-hm-stone-300 mt-4 font-medium">
+          <Search className="text-hm-muted mx-auto h-10 w-10" />
+          <p className="text-hm-ink-soft mt-4 font-medium">
             You haven&apos;t saved any searches yet.
           </p>
-          <p className="text-hm-stone-500 mt-2 text-sm">
+          <p className="text-hm-muted mt-2 text-sm">
             Dial in filters in settings and tap &ldquo;Save search&rdquo; to
             keep getting alerts here.
           </p>
           <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Button
               asChild
-              className="bg-hm-gold-500 text-hm-stone-950 hover:bg-hm-gold-400"
+              className="bg-hm-accent text-hm-ink hover:bg-hm-accent"
             >
               <Link href="/dashboard">Browse homes</Link>
             </Button>
@@ -239,14 +235,14 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/10">
-            <Search className="h-5 w-5 text-sky-400" />
+          <div className="bg-hm-accent/10 flex h-10 w-10 items-center justify-center rounded-xl">
+            <Search className="text-hm-accent h-5 w-5" />
           </div>
           <div>
-            <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">
+            <h2 className="font-heading text-hm-ink text-xl font-semibold">
               Saved Searches
             </h2>
-            <p className="text-hm-stone-500 text-sm">
+            <p className="text-hm-muted text-sm">
               {savedSearches.length} saved{' '}
               {savedSearches.length === 1 ? 'search' : 'searches'}
             </p>
@@ -255,7 +251,7 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
         <Button
           variant="outline"
           onClick={loadSavedSearches}
-          className="text-hm-stone-300 border-white/10 bg-white/5 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
+          className="text-hm-ink-soft border-white/10 bg-white/5 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
         >
           <RefreshCw className="mr-2 h-4 w-4" />
           Refresh list
@@ -280,7 +276,7 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
               >
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div className="flex-1 space-y-3">
-                    <h3 className="text-hm-stone-200 text-lg font-semibold">
+                    <h3 className="text-hm-ink text-lg font-semibold">
                       {search.name}
                     </h3>
                     <div className="flex flex-wrap gap-2">
@@ -294,14 +290,14 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
                             <IconComponent
                               className={`h-3 w-3 ${filter.color}`}
                             />
-                            <span className="text-hm-stone-300">
+                            <span className="text-hm-ink-soft">
                               {filter.text}
                             </span>
                           </span>
                         )
                       })}
                     </div>
-                    <div className="text-hm-stone-500 flex items-center gap-1.5 text-xs">
+                    <div className="text-hm-muted flex items-center gap-1.5 text-xs">
                       <Calendar className="h-3 w-3" />
                       Created{' '}
                       {new Date(search.created_at!).toLocaleDateString()}
@@ -320,7 +316,7 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
                       className={`flex h-9 w-9 items-center justify-center rounded-lg border transition-all ${
                         hasNotifications
                           ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'
-                          : 'text-hm-stone-500 hover:text-hm-stone-300 border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
+                          : 'text-hm-muted hover:text-hm-ink-soft border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
                       }`}
                     >
                       {hasNotifications ? (
@@ -332,7 +328,7 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
                     <button
                       aria-label={`Delete saved search ${search.name}`}
                       onClick={() => deleteSearch(search.id)}
-                      className="text-hm-stone-500 flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/5 transition-all hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-400"
+                      className="text-hm-muted flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/5 transition-all hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-400"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>

@@ -120,8 +120,8 @@ export function Header() {
         className={cn(
           'sticky top-0 z-50 border-b backdrop-blur-md transition-colors duration-300',
           isScrolled
-            ? 'border-hm-stone-600/70 bg-hm-obsidian-900/92 shadow-[0_8px_26px_rgba(52,43,37,0.08)]'
-            : 'border-hm-stone-600/50 bg-hm-obsidian-950/75'
+            ? 'border-hm-border/70 bg-hm-surface/92 shadow-[0_8px_26px_rgba(52,43,37,0.08)]'
+            : 'border-hm-border/50 bg-hm-canvas/75'
         )}
       >
         <nav className="mx-auto w-full max-w-6xl px-4 sm:px-6">
@@ -129,11 +129,11 @@ export function Header() {
             <div className="flex items-center">
               <Link
                 href="/dashboard"
-                className="focus-visible:ring-token-primary-light focus-visible:ring-offset-token-primary-dark px-token-md py-token-sm text-hm-stone-200 inline-flex min-h-[48px] min-w-[48px] touch-manipulation items-center gap-2 rounded-md font-semibold transition-opacity duration-200 hover:opacity-80 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                className="focus-visible:ring-token-primary-light focus-visible:ring-offset-token-primary-dark px-token-md py-token-sm text-hm-ink inline-flex min-h-[48px] min-w-[48px] touch-manipulation items-center gap-2 rounded-md font-semibold transition-opacity duration-200 hover:opacity-80 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
                 aria-label="HomeMatch - Go to dashboard"
                 data-testid="nav-dashboard"
               >
-                <HomeMatchLogo size="sm" textClassName="text-hm-stone-200" />
+                <HomeMatchLogo size="sm" textClassName="text-hm-ink" />
               </Link>
             </div>
 
@@ -150,10 +150,10 @@ export function Header() {
                     key={link.href}
                     href={link.href}
                     className={cn(
-                      'focus-visible:ring-token-primary-light focus-visible:ring-offset-token-primary-dark text-hm-stone-400 hover:text-hm-stone-200 inline-flex min-h-[48px] min-w-[48px] touch-manipulation items-center justify-center space-x-2 rounded-md p-4 transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
+                      'focus-visible:ring-token-primary-light focus-visible:ring-offset-token-primary-dark text-hm-muted hover:text-hm-ink inline-flex min-h-[48px] min-w-[48px] touch-manipulation items-center justify-center space-x-2 rounded-md p-4 transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
                       isActive
-                        ? 'bg-hm-obsidian-800/80 text-hm-stone-200 ring-hm-amber-400/20 after:bg-hm-amber-400 relative shadow-[0_10px_24px_rgba(52,43,37,0.08)] ring-1 after:absolute after:inset-x-4 after:bottom-1 after:h-[2px] after:rounded-full after:content-[""]'
-                        : 'hover:bg-hm-obsidian-800/70'
+                        ? 'bg-hm-surface/80 text-hm-ink ring-hm-accent/20 after:bg-hm-accent relative shadow-[0_10px_24px_rgba(52,43,37,0.08)] ring-1 after:absolute after:inset-x-4 after:bottom-1 after:h-[2px] after:rounded-full after:content-[""]'
+                        : 'hover:bg-hm-surface/70'
                     )}
                     aria-label={link.label}
                     aria-current={isActive ? 'page' : undefined}
@@ -169,7 +169,7 @@ export function Header() {
               {/* Mobile Menu Button */}
               <button
                 onClick={toggleMobileMenu}
-                className="hover:bg-token-primary/20 focus-visible:ring-token-primary-light focus-visible:ring-offset-token-primary-dark text-hm-stone-400 hover:text-hm-stone-200 inline-flex min-h-[48px] min-w-[48px] touch-manipulation items-center justify-center rounded-md p-2 transition-all hover:scale-105 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none active:scale-95 md:hidden"
+                className="hover:bg-token-primary/20 focus-visible:ring-token-primary-light focus-visible:ring-offset-token-primary-dark text-hm-muted hover:text-hm-ink inline-flex min-h-[48px] min-w-[48px] touch-manipulation items-center justify-center rounded-md p-2 transition-all hover:scale-105 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none active:scale-95 md:hidden"
                 aria-label="Open navigation menu"
                 aria-expanded={isMobileMenuOpen}
                 aria-controls="mobile-menu"
@@ -221,7 +221,7 @@ export function Header() {
                 damping: 30,
                 duration: 0.3,
               }}
-              className="border-hm-stone-600/70 bg-hm-obsidian-900/95 fixed top-0 right-0 z-50 h-full w-80 max-w-[90vw] border-l shadow-2xl backdrop-blur-md md:hidden"
+              className="border-hm-border/70 bg-hm-surface/95 fixed top-0 right-0 z-50 h-full w-80 max-w-[90vw] border-l shadow-2xl backdrop-blur-md md:hidden"
               role="dialog"
               aria-modal="true"
               aria-label="Navigation menu"
@@ -229,12 +229,10 @@ export function Header() {
             >
               {/* Mobile Menu Header */}
               <div className="border-token-primary/20 flex h-16 items-center justify-between border-b p-6">
-                <span className="text-hm-stone-200 text-lg font-semibold">
-                  Menu
-                </span>
+                <span className="text-hm-ink text-lg font-semibold">Menu</span>
                 <button
                   onClick={closeMobileMenu}
-                  className="hover:bg-token-primary/20 focus-visible:ring-token-primary-light text-hm-stone-400 hover:text-hm-stone-200 inline-flex min-h-[48px] min-w-[48px] touch-manipulation items-center justify-center rounded-md p-2 transition-all hover:scale-105 focus-visible:ring-2 focus-visible:outline-none active:scale-95"
+                  className="hover:bg-token-primary/20 focus-visible:ring-token-primary-light text-hm-muted hover:text-hm-ink inline-flex min-h-[48px] min-w-[48px] touch-manipulation items-center justify-center rounded-md p-2 transition-all hover:scale-105 focus-visible:ring-2 focus-visible:outline-none active:scale-95"
                   aria-label="Close navigation menu"
                   type="button"
                 >
@@ -257,10 +255,10 @@ export function Header() {
                           href={link.href}
                           onClick={closeMobileMenu}
                           className={cn(
-                            'focus-visible:ring-token-primary-light text-hm-stone-400 hover:text-hm-stone-200 flex min-h-[52px] touch-manipulation items-center space-x-3 rounded-lg p-4 transition-all focus-visible:ring-2 focus-visible:outline-none',
+                            'focus-visible:ring-token-primary-light text-hm-muted hover:text-hm-ink flex min-h-[52px] touch-manipulation items-center space-x-3 rounded-lg p-4 transition-all focus-visible:ring-2 focus-visible:outline-none',
                             isActive
-                              ? 'bg-hm-obsidian-800/80 text-hm-stone-200 ring-hm-amber-400/20 ring-1'
-                              : 'hover:bg-hm-obsidian-800/70 active:bg-hm-obsidian-800'
+                              ? 'bg-hm-surface/80 text-hm-ink ring-hm-accent/20 ring-1'
+                              : 'hover:bg-hm-surface/70 active:bg-hm-surface'
                           )}
                           aria-current={isActive ? 'page' : undefined}
                         >
@@ -275,20 +273,20 @@ export function Header() {
                 </ul>
 
                 {/* Mobile Menu User Section */}
-                <div className="border-hm-stone-600/60 mt-8 border-t pt-6">
+                <div className="border-hm-border/60 mt-8 border-t pt-6">
                   {/* User Info */}
                   <div className="mb-4 flex items-center gap-3 px-2">
-                    <div className="from-hm-amber-500 via-hm-amber-600 to-hm-stone-300 ring-hm-amber-400/20 flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br text-sm font-semibold text-white ring-1">
+                    <div className="from-hm-accent-strong via-hm-accent-strong to-hm-surface ring-hm-accent/20 flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br text-sm font-semibold text-white ring-1">
                       {displayName?.[0]?.toUpperCase() ||
                         email?.[0]?.toUpperCase() ||
                         '?'}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-hm-stone-200 truncate text-sm font-medium">
+                      <p className="text-hm-ink truncate text-sm font-medium">
                         {displayName || 'Welcome'}
                       </p>
                       {email && (
-                        <p className="text-hm-stone-500 truncate text-xs">
+                        <p className="text-hm-muted truncate text-xs">
                           {email}
                         </p>
                       )}
@@ -299,10 +297,10 @@ export function Header() {
                     <Link
                       href="/profile"
                       onClick={closeMobileMenu}
-                      className="group text-hm-stone-400 hover:bg-hm-obsidian-800/70 hover:text-hm-stone-200 focus-visible:bg-hm-obsidian-800/70 focus-visible:text-hm-stone-200 flex min-h-[52px] touch-manipulation items-center gap-3 rounded-xl px-3 py-3 transition-all duration-200 focus-visible:outline-none"
+                      className="group text-hm-muted hover:bg-hm-surface/70 hover:text-hm-ink focus-visible:bg-hm-surface/70 focus-visible:text-hm-ink flex min-h-[52px] touch-manipulation items-center gap-3 rounded-xl px-3 py-3 transition-all duration-200 focus-visible:outline-none"
                       data-testid="nav-profile"
                     >
-                      <span className="from-hm-obsidian-800 to-hm-obsidian-900 group-hover:from-hm-obsidian-800 group-hover:to-hm-obsidian-800 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br transition-all duration-200">
+                      <span className="from-hm-surface to-hm-surface group-hover:from-hm-surface group-hover:to-hm-surface flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br transition-all duration-200">
                         <User className="h-5 w-5" />
                       </span>
                       <span className="text-[15px] font-medium">Profile</span>
@@ -310,9 +308,9 @@ export function Header() {
                     <Link
                       href="/settings"
                       onClick={closeMobileMenu}
-                      className="group text-hm-stone-400 hover:bg-hm-obsidian-800/70 hover:text-hm-stone-200 focus-visible:bg-hm-obsidian-800/70 focus-visible:text-hm-stone-200 flex min-h-[52px] touch-manipulation items-center gap-3 rounded-xl px-3 py-3 transition-all duration-200 focus-visible:outline-none"
+                      className="group text-hm-muted hover:bg-hm-surface/70 hover:text-hm-ink focus-visible:bg-hm-surface/70 focus-visible:text-hm-ink flex min-h-[52px] touch-manipulation items-center gap-3 rounded-xl px-3 py-3 transition-all duration-200 focus-visible:outline-none"
                     >
-                      <span className="from-hm-obsidian-800 to-hm-obsidian-900 group-hover:from-hm-obsidian-800 group-hover:to-hm-obsidian-800 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br transition-all duration-200">
+                      <span className="from-hm-surface to-hm-surface group-hover:from-hm-surface group-hover:to-hm-surface flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br transition-all duration-200">
                         <Settings className="h-5 w-5" />
                       </span>
                       <span className="text-[15px] font-medium">Settings</span>
@@ -327,7 +325,7 @@ export function Header() {
                         'group flex min-h-[52px] w-full touch-manipulation items-center gap-3 rounded-xl px-3 py-3 text-left transition-all duration-200 focus-visible:outline-none',
                         isSigningOut
                           ? 'cursor-not-allowed opacity-50'
-                          : 'text-hm-stone-500 hover:bg-rose-50 hover:text-rose-700 focus-visible:bg-rose-500/10 focus-visible:text-rose-400'
+                          : 'text-hm-muted hover:bg-rose-50 hover:text-rose-700 focus-visible:bg-rose-500/10 focus-visible:text-rose-400'
                       )}
                       type="button"
                       data-testid="logout-button"
@@ -336,8 +334,8 @@ export function Header() {
                         className={cn(
                           'flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl transition-all duration-200',
                           isSigningOut
-                            ? 'bg-hm-obsidian-800/60'
-                            : 'from-hm-obsidian-800 bg-gradient-to-br to-transparent group-hover:from-rose-100 group-hover:to-rose-50'
+                            ? 'bg-hm-surface/60'
+                            : 'from-hm-surface bg-gradient-to-br to-transparent group-hover:from-rose-100 group-hover:to-rose-50'
                         )}
                       >
                         <X className="h-5 w-5" />

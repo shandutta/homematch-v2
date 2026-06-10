@@ -86,7 +86,20 @@ INSTEAD, write practical observations like:
 - "Mudroom right off the garage - you'll actually use the front door for guests"
 - "Double sinks in the primary bath - no more fighting over counter space"
 
-AVAILABLE TAGS (pick 4-8 that genuinely apply):
+TAG SELECTION DISCIPLINE (critical — most outputs over-tag):
+- Default to 4-5 tags, NOT 8. Eight tags is reserved for properties with unusually rich evidence.
+- Each tag must be earned by a SPECIFIC observation. If you can't point to a room, fixture, score, or listed feature, do not use the tag.
+- PREFER tags from the ARCHITECTURAL, OUTDOOR, INTERIOR, and AESTHETIC categories — these describe what's actually visible. LIFESTYLE tags are inferences and require stronger evidence.
+- These "easy" lifestyle categories are over-used — only include them if the evidence below is met:
+  - "Remote Work Ready" (MOST over-used — omit by default): only if a dedicated office/study/den ROOM is clearly present. A bedroom with a desk, a corner, or a "flex" label does NOT count. When unsure, drop it and use a visible architectural/interior tag instead.
+  - "Growing Family": requires 3+ bedrooms AND a fenced yard or play area visible. Just "3 beds" is not enough.
+  - "Pet Paradise": requires a fenced yard, dog run, mudroom, or pet wash. Generic "backyard" is not enough.
+  - "First-Time Buyer": only when price is clearly entry-tier for the local market AND the home is small/simple. Not for $1M+ homes.
+  - "Walkable Neighborhood": requires neighborhood walk score >= 70 in the provided neighborhood context. Do NOT infer from images.
+- Same discipline applies to "lifestyleFits.category" — do not include these categories unless the same evidence is present.
+- For lifestyleFits specifically, target 2-3 fits (not 6). Each must cite a different room / feature.
+
+AVAILABLE TAGS (pick 4-8 that genuinely apply, default 4-5):
 ${formatTagsForPrompt()}`
 
 export interface NeighborhoodVibesContext {
@@ -103,6 +116,22 @@ export interface NeighborhoodVibesContext {
   transitScore: number | null
 }
 
+export interface PropertyMarketContext {
+  daysOnMarket?: number | null
+  hoaFeeMonthly?: number | null
+  priceHistory?: Array<{
+    date?: string
+    price?: number
+    event?: string
+  }> | null
+  schools?: Array<{
+    name?: string
+    rating?: number
+    level?: string
+    distance?: number
+  }> | null
+}
+
 export interface PropertyContext {
   address: string
   city: string
@@ -117,6 +146,7 @@ export interface PropertyContext {
   amenities: string[] | null
   description: string | null
   neighborhoodVibes?: NeighborhoodVibesContext | null
+  market?: PropertyMarketContext | null
 }
 
 function formatPrice(price: number): string {
@@ -213,14 +243,69 @@ LISTING DESCRIPTION:
 ${desc}`
   }
 
+  // Market context (days on market, recent price event, top school, HOA).
+  // Sourced from grounded /property data — safe to cite, never fabricate.
+  let marketSection = ''
+  const mkt = property.market
+  if (mkt) {
+    const lines: string[] = []
+    if (typeof mkt.daysOnMarket === 'number') {
+      lines.push(`On market: ${mkt.daysOnMarket} day(s)`)
+    }
+    if (Array.isArray(mkt.priceHistory) && mkt.priceHistory.length > 0) {
+      const recent = mkt.priceHistory[0]
+      if (recent && (recent.event || typeof recent.price === 'number')) {
+        const when = recent.date ? ` (${recent.date})` : ''
+        const amt =
+          typeof recent.price === 'number'
+            ? ` at ${formatPrice(recent.price)}`
+            : ''
+        lines.push(
+          `Most recent listing event: ${recent.event ?? 'price update'}${amt}${when}`
+        )
+      }
+    }
+    if (Array.isArray(mkt.schools) && mkt.schools.length > 0) {
+      const top = mkt.schools
+        .filter((s) => typeof s.rating === 'number')
+        .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))[0]
+      if (top && typeof top.rating === 'number' && top.name) {
+        const lvl = top.level ? ` ${top.level}` : ''
+        const dist =
+          typeof top.distance === 'number' ? `, ${top.distance}mi` : ''
+        lines.push(
+          `Top-rated nearby school: ${top.name}${lvl} — ${top.rating}/10${dist}`
+        )
+      }
+    }
+    if (typeof mkt.hoaFeeMonthly === 'number' && mkt.hoaFeeMonthly > 0) {
+      lines.push(`HOA: ${formatPrice(mkt.hoaFeeMonthly)}/month`)
+    }
+    if (lines.length > 0) {
+      marketSection = `
+
+MARKET CONTEXT (grounded facts — weave in naturally ONLY where it adds buyer value, e.g. a recent price cut or a strong school; never force all of these, never fabricate):
+- ${lines.join('\n- ')}`
+    }
+  }
+
   return `Analyze the ${imageCount} property image(s) and extract buyer-relevant evidence and fit signals.
 
-${details}${neighborhoodSection}${descriptionSection}
+${details}${neighborhoodSection}${descriptionSection}${marketSection}
+
+STRUCTURAL FACTS YOU MUST SURFACE (do not let photos distract you from these):
+Real listings bury headline structural facts in the details and description. If any of the following appear in the PROPERTY DETAILS, LISTED AMENITIES, or LISTING DESCRIPTION above, you MUST name them explicitly in vibeStatement and/or notableFeatures, using the listing's own words:
+- Multi-level / multi-story layouts (e.g. "two-level unit", "split-level", "main-level living")
+- Separate dwelling units: ADU, in-law unit / In-Law Floorplan, Au Pair, second residence, duplex/triplex unit count
+- The named neighborhood or district (e.g. "Crocker Highlands", "Eureka Valley", "Twin Peaks") — name it verbatim
+- Distinctive listed amenities a buyer filters on: EV charging, dog run, breakfast nook/bar, updated kitchen, panoramic/named views (Bay, Golden Gate)
+These structural facts matter MORE to a buyer than what's merely pretty in a photo. Prefer naming a real listed feature over describing a generic visible one.
+CAUTION: surface the structural FACT (the unit count, the level, the neighborhood name, the amenity) but NEVER copy the listing's marketing adjectives. Listing descriptions are full of banned hype ("retreat", "sanctuary", "oasis", "breathtaking", "resort-style", "magical", "stunning"). Strip those words — name the in-law unit, not the "magical retreat"; name the backyard pool, not the "resort-style oasis".
 
 Respond with a JSON object matching this EXACT structure:
 {
-  "tagline": "string (10-80 chars) - restrained, specific headline about a visible/listed feature. NO hype words like dream, perfect, magical, oasis, breathtaking, absolute, endless.",
-  "vibeStatement": "string (20-200 chars) - 1-2 practical sentences grounded in visible/listed facts. Name the evidence before the lifestyle implication. NEVER start with 'This isn't' or 'More than'. Good examples: 'The office nook and quiet rear bedrooms make remote-work days plausible.' or 'A kitchen island plus sliders to the deck supports casual dinners without overselling it.'",
+  "tagline": "string (10-80 chars) - restrained, specific headline about a visible/listed feature. MUST contain a concrete noun (room, fixture, material, feature) — not a category or feeling. Forbidden: tagline cannot start with the city name; cannot contain any of these tag names verbatim ('Culinary Haven', 'Chef's Kitchen', 'Indoor-Outdoor Flow', 'Gallery-Ready Walls', 'Natural Light Filled', 'Remote Work Ready'). NO hype words like dream, perfect, magical, oasis, breathtaking, absolute, endless.",
+  "vibeStatement": "string (60-200 chars) - exactly 2 sentences, both grounded. Sentence 1: name the anchor (city + bed count or sqft) AND one specific listed/visible feature. Sentence 2: name a SECOND, DIFFERENT concrete feature (room, fixture, material, layout, or listed amenity) — do not repeat sentence 1. At least TWO distinct concrete features total; one fact plus a generality is NOT enough. Only state features present in the listing details/description or clearly visible in a photo — do NOT invent views, room labels, or amenities. Name evidence before any lifestyle implication. NEVER start with 'This isn't' or 'More than'; NEVER end with a filler clause like 'perfect for enjoying the weather', 'great for relaxing', or 'ideal for the area'. Good: 'This 1,541 sqft 1928 home keeps original parquet floors and an arched living-room ceiling. A ground-floor bonus room off the eat-in kitchen adds flexible space.' Bad (thin + filler): 'This 1,553 sqft house has a pool, perfect for enjoying the weather.'",
   "primaryVibes": [
     {
       "name": "string - UNIQUE evidence-backed descriptor for THIS home (not generic like 'Modern Minimalist'). Think: 'Rear-Deck Entertaining' or 'Separated Office Nook'",
@@ -230,9 +315,9 @@ Respond with a JSON object matching this EXACT structure:
   ],
   "lifestyleFits": [
     {
-      "category": "string - MUST be from predefined list: Remote Work Ready, Growing Family, Entertainer's Dream, Empty Nester, First-Time Buyer, Pet Paradise, Multi-Gen Living, Fitness Focused, Creative Studio, Culinary Haven, Book Lover's Nook, Hobbyist Heaven, Indoor-Outdoor Flow",
+      "category": "string - MUST be from predefined list. PREFER the less-common options: Culinary Haven, Book Lover's Nook, Hobbyist Heaven, Creative Studio, Multi-Gen Living, Fitness Focused, Empty Nester, Indoor-Outdoor Flow, Entertainer's Dream. The four 'easy' tags (Remote Work Ready, Growing Family, Pet Paradise, First-Time Buyer) require strict evidence — see TAG SELECTION DISCIPLINE above.",
       "score": "number 0.0-1.0 - how well this property fits the lifestyle category",
-      "reason": "string (max 200 chars) - evidence first, implication second. 'The bonus room off the garage gives a real office option' not 'spacious layout'"
+      "reason": "string (max 200 chars) - cite a SPECIFIC room/feature/listed amenity. Each reason in this array must reference a DIFFERENT piece of evidence (no two reasons may share their first noun phrase)."
     }
   ],
   "notableFeatures": [
@@ -245,20 +330,20 @@ Respond with a JSON object matching this EXACT structure:
 	  "aesthetics": {
 	    "lightingQuality": "natural_abundant" | "natural_moderate" | "artificial_warm" | "artificial_cool" | "mixed",
 	    "colorPalette": ["2-4 dominant tones you actually see, e.g., 'warm gray', 'honey oak', 'navy accents'"],
-	    "architecturalStyle": "string (max 80 chars) - be specific (e.g., '1960s ranch with modern updates' not just 'traditional')",
+	    "architecturalStyle": "string (max 80 chars) - describe what you ACTUALLY see (e.g., 'split-level with cedar shake siding', 'two-story Mediterranean with red tile roof', 'Edwardian rowhouse'). Do NOT guess at a decade or 'modern updates' unless you can point to specific updates in the photos.",
 	    "overallCondition": "pristine" | "well_maintained" | "dated_but_clean" | "needs_work"
 	  },
 	  "emotionalHooks": ["2-4 evidence-backed buyer notes. NO: quotes, dream, perfect, magical, sun-drenched, morning coffee, endless possibilities. YES: 'Mudroom storage helps with kids and dogs.' or 'Double sinks reduce weekday bathroom bottlenecks.'"],
-	  "suggestedTags": ["4-8 tags EXACTLY from AVAILABLE TAGS list above (exact spelling/case). Do not invent new tags."]
+	  "suggestedTags": ["EXACTLY 4 or 5 tags. Do NOT exceed 5. Each tag MUST be from the AVAILABLE TAGS list above (exact spelling/case). At least 3 of your tags MUST come from ARCHITECTURAL / OUTDOOR / INTERIOR / AESTHETIC categories (visible features), not LIFESTYLE / LOCATION. Do not invent new tags."]
 }
 
 	Requirements:
 	- primaryVibes: 2-4 items with UNIQUE evidence-backed names for this property. Vary intensities meaningfully.
-	- lifestyleFits: 2-6 items. Every reason must cite a feature, room, layout, score, or neighborhood fact.
+	- lifestyleFits: 2-3 items (NOT 6). Every reason must cite a feature, room, layout, score, or neighborhood fact. Each lifestyleFit must use a DIFFERENT category — no duplicates within one property.
 	- notableFeatures: 2-8 specific features that would catch a buyer's eye
-	- Don’t fixate on one repeated detail (e.g., gates/fences); balance interior + outdoor.
-	- emotionalHooks: 2-4 concise buyer notes, not sentimental narration
-	- suggestedTags: 4-8 tags ONLY from AVAILABLE TAGS above. Exact spelling/case. Pick from multiple categories.`
+	- Don't fixate on one repeated detail (e.g., gates/fences); balance interior + outdoor.
+	- emotionalHooks: 2-4 concise buyer notes, not sentimental narration. Each hook must reference a DIFFERENT room or feature.
+	- suggestedTags: 4-5 tags ONLY from AVAILABLE TAGS above. Exact spelling/case. Pick from multiple categories. At least 3 must be visible-feature tags (not lifestyle).`
 }
 
 /**

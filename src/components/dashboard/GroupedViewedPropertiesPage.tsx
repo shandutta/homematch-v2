@@ -236,10 +236,10 @@ function PropertySection({
       className="space-y-4"
     >
       <div>
-        <h2 className="font-display text-hm-stone-200 text-xl font-medium tracking-tight sm:text-2xl">
+        <h2 className="font-display text-hm-ink text-xl font-medium tracking-tight sm:text-2xl">
           {title}
         </h2>
-        <p className="text-hm-stone-500 text-sm">{description}</p>
+        <p className="text-hm-muted text-sm">{description}</p>
       </div>
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {properties.map((property, index) => (
@@ -389,7 +389,7 @@ export function GroupedViewedPropertiesPage() {
 
   return (
     <div className="space-y-10 sm:space-y-12">
-      <h1 className="font-display text-hm-stone-200 text-2xl font-medium tracking-tight sm:text-4xl">
+      <h1 className="font-display text-hm-ink text-2xl font-medium tracking-tight sm:text-4xl">
         Viewed Properties
       </h1>
 
@@ -399,11 +399,11 @@ export function GroupedViewedPropertiesPage() {
         </div>
       ) : !hasAnyProperties ? (
         <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-6 py-16 text-center backdrop-blur">
-          <History className="text-hm-amber-400 mx-auto h-10 w-10" />
-          <h2 className="font-display text-hm-stone-200 mt-5 text-2xl font-medium tracking-tight">
+          <History className="text-hm-accent mx-auto h-10 w-10" />
+          <h2 className="font-display text-hm-ink mt-5 text-2xl font-medium tracking-tight">
             No viewed properties yet
           </h2>
-          <p className="text-hm-stone-500 mx-auto mt-2 max-w-xl text-sm sm:text-base">
+          <p className="text-hm-muted mx-auto mt-2 max-w-xl text-sm sm:text-base">
             Swipe through recommendations, then come back here to refine your
             shortlist with your household.
           </p>
@@ -411,14 +411,14 @@ export function GroupedViewedPropertiesPage() {
           <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Button
               asChild
-              className="border-hm-amber-400/30 bg-hm-amber-400/10 text-hm-amber-400 hover:border-hm-amber-400/50 hover:bg-hm-amber-400/20 rounded-full border px-8 py-2 font-medium transition-all duration-200"
+              className="border-hm-accent/30 bg-hm-accent/10 text-hm-accent hover:border-hm-accent/50 hover:bg-hm-accent/20 rounded-full border px-8 py-2 font-medium transition-all duration-200"
             >
               <Link href="/dashboard">Start swiping</Link>
             </Button>
             <Button
               asChild
               variant="ghost"
-              className="text-hm-stone-400 hover:text-hm-stone-200"
+              className="text-hm-muted hover:text-hm-ink"
             >
               <Link href="/dashboard/liked">Review favorites</Link>
             </Button>
@@ -442,7 +442,7 @@ export function GroupedViewedPropertiesPage() {
                       'flex flex-1 items-center justify-center gap-2 rounded-full px-3 py-2 text-xs font-semibold transition',
                       isActive
                         ? 'bg-white/10 text-white shadow-inner'
-                        : 'text-hm-stone-400 hover:text-hm-stone-200',
+                        : 'text-hm-muted hover:text-hm-ink',
                       isDisabled && 'cursor-not-allowed opacity-50'
                     )}
                   >
@@ -501,7 +501,7 @@ export function GroupedViewedPropertiesPage() {
               <Button
                 onClick={fetchAllNextPages}
                 disabled={isFetchingNextPage}
-                className="border-hm-amber-400/30 bg-hm-amber-400/10 text-hm-amber-400 hover:border-hm-amber-400/50 hover:bg-hm-amber-400/20 rounded-full border px-8 py-2 font-medium transition-all duration-200"
+                className="border-hm-accent/30 bg-hm-accent/10 text-hm-accent hover:border-hm-accent/50 hover:bg-hm-accent/20 rounded-full border px-8 py-2 font-medium transition-all duration-200"
               >
                 {isFetchingNextPage ? 'Loading more...' : 'Load More'}
               </Button>

@@ -203,27 +203,27 @@ export function ProfilePageClient({
       label: 'Liked',
       value: activitySummary.likes,
       icon: Heart,
-      gradient: 'from-emerald-500/20 to-emerald-600/5',
-      iconColor: 'text-emerald-400',
-      valueColor: 'text-emerald-300',
+      gradient: 'from-emerald-500/15 to-emerald-600/5',
+      iconColor: 'text-emerald-600',
+      valueColor: 'text-emerald-700',
       href: '/dashboard/liked',
     },
     {
       label: 'Viewed',
       value: activitySummary.views,
       icon: Eye,
-      gradient: 'from-amber-500/20 to-amber-600/5',
-      iconColor: 'text-amber-400',
-      valueColor: 'text-amber-300',
+      gradient: 'from-hm-accent/15 to-hm-accent-strong/5',
+      iconColor: 'text-hm-accent',
+      valueColor: 'text-hm-accent-strong',
       href: '/dashboard/viewed',
     },
     {
       label: 'Saved searches',
       value: activitySummary.saved_searches,
       icon: Search,
-      gradient: 'from-sky-500/20 to-sky-600/5',
-      iconColor: 'text-sky-400',
-      valueColor: 'text-sky-300',
+      gradient: 'from-hm-accent/15 to-hm-accent-strong/5',
+      iconColor: 'text-hm-accent',
+      valueColor: 'text-hm-accent-strong',
       href: '/settings?tab=saved-searches',
     },
   ]
@@ -237,21 +237,21 @@ export function ProfilePageClient({
   }
 
   return (
-    <div className="gradient-grid-bg min-h-screen pb-6 text-white">
+    <div className="gradient-grid-bg text-hm-ink min-h-screen pb-6">
       {/* Hero Header */}
       <m.section
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="relative isolate overflow-hidden border-b border-white/5"
+        className="border-hm-border relative isolate overflow-hidden border-b"
       >
         {/* Ambient glow */}
         <div
           className="pointer-events-none absolute inset-0 overflow-hidden"
           aria-hidden="true"
         >
-          <div className="absolute -top-40 left-1/4 h-[500px] w-[500px] rounded-full bg-amber-500/[0.03] blur-[100px]" />
-          <div className="absolute -top-20 right-1/4 h-[400px] w-[400px] rounded-full bg-sky-500/[0.04] blur-[80px]" />
+          <div className="bg-hm-accent/[0.04] absolute -top-40 left-1/4 h-[500px] w-[500px] rounded-full blur-[100px]" />
+          <div className="bg-hm-accent-strong/[0.04] absolute -top-20 right-1/4 h-[400px] w-[400px] rounded-full blur-[80px]" />
         </div>
 
         <div className="relative mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
@@ -263,7 +263,7 @@ export function ProfilePageClient({
           >
             <Link
               href="/dashboard"
-              className="group text-hm-stone-400 hover:text-hm-stone-200 inline-flex items-center gap-2 text-sm transition-colors"
+              className="group text-hm-muted hover:text-hm-ink inline-flex items-center gap-2 text-sm transition-colors"
             >
               <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
               <span>Back to Dashboard</span>
@@ -295,22 +295,22 @@ export function ProfilePageClient({
 
                 {/* Name and meta */}
                 <div className="flex-1 pt-1">
-                  <p className="text-hm-stone-500 text-xs font-medium tracking-[0.2em] uppercase">
+                  <p className="text-hm-muted text-xs font-medium tracking-[0.2em] uppercase">
                     My Profile
                   </p>
-                  <h1 className="font-heading text-hm-stone-200 mt-1 text-3xl font-semibold tracking-tight sm:text-4xl">
+                  <h1 className="font-heading text-hm-ink mt-1 text-3xl font-semibold tracking-tight sm:text-4xl">
                     {displayName}
                   </h1>
                   <div className="mt-3 flex flex-wrap items-center gap-2">
-                    <span className="text-hm-stone-400 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs">
+                    <span className="text-hm-muted border-hm-border bg-hm-surface inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs">
                       <Mail className="h-3 w-3" />
                       {user.email}
                     </span>
                     <span
                       className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs ${
                         hasHousehold
-                          ? 'border border-emerald-500/30 bg-emerald-500/10 text-emerald-300'
-                          : 'text-hm-stone-400 border border-white/10 bg-white/5'
+                          ? 'border border-emerald-600/30 bg-emerald-50 text-emerald-700'
+                          : 'text-hm-muted border-hm-border bg-hm-surface border'
                       }`}
                     >
                       <Users className="h-3 w-3" />
@@ -320,7 +320,7 @@ export function ProfilePageClient({
                 </div>
               </div>
 
-              <p className="text-hm-stone-400 max-w-xl text-sm leading-relaxed">
+              <p className="text-hm-muted max-w-xl text-sm leading-relaxed">
                 Manage your profile, household settings, and track your property
                 search activity all in one place.
               </p>
@@ -331,14 +331,14 @@ export function ProfilePageClient({
               <Link href="/settings">
                 <Button
                   variant="outline"
-                  className="text-hm-stone-300 border-white/10 bg-white/5 px-5 backdrop-blur-sm transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
+                  className="text-hm-ink-soft border-hm-border bg-hm-surface hover:border-hm-border-strong hover:bg-hm-border/40 hover:text-hm-ink px-5 backdrop-blur-sm transition-all"
                 >
                   Settings
                 </Button>
               </Link>
               <Link href="/dashboard/liked">
-                <Button className="border border-emerald-500/25 bg-gradient-to-r from-emerald-500/30 to-emerald-600/20 px-5 text-emerald-100 shadow-md shadow-emerald-900/25 backdrop-blur-sm transition-all hover:border-emerald-400/40 hover:from-emerald-500/35 hover:to-emerald-600/25 hover:shadow-emerald-900/35">
-                  <Heart className="mr-2 h-4 w-4 text-emerald-200" />
+                <Button className="bg-hm-accent hover:bg-hm-accent-strong px-5 text-white shadow-md transition-all">
+                  <Heart className="mr-2 h-4 w-4 text-white" />
                   View Favorites
                 </Button>
               </Link>
@@ -358,19 +358,19 @@ export function ProfilePageClient({
                 <Link
                   key={stat.label}
                   href={stat.href}
-                  className="group block rounded-2xl focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 focus-visible:ring-offset-black/0 focus-visible:outline-none"
+                  className="group focus-visible:ring-hm-focus/40 focus-visible:ring-offset-hm-canvas block rounded-2xl focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
                   aria-label={`${stat.label} details`}
                 >
                   <m.div
                     variants={statVariants}
                     whileHover={{ y: -2, transition: { duration: 0.2 } }}
-                    className={`relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-br ${stat.gradient} p-5 backdrop-blur-sm transition-all hover:border-white/10`}
+                    className={`border-hm-border relative overflow-hidden rounded-2xl border bg-gradient-to-br ${stat.gradient} hover:border-hm-border p-5 backdrop-blur-sm transition-all`}
                     style={{ animationDelay: `${index * 0.1}s` }}
                   >
-                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+                    <div className="from-hm-ink/[0.03] pointer-events-none absolute inset-0 bg-gradient-to-br to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
                     <div className="relative flex items-center justify-between">
                       <div>
-                        <p className="text-hm-stone-500 text-xs font-medium tracking-[0.15em] uppercase">
+                        <p className="text-hm-muted text-xs font-medium tracking-[0.15em] uppercase">
                           {stat.label}
                         </p>
                         <p
@@ -380,7 +380,7 @@ export function ProfilePageClient({
                         </p>
                       </div>
                       <div
-                        className={`flex h-12 w-12 items-center justify-center rounded-xl bg-white/5 ${stat.iconColor}`}
+                        className={`bg-hm-canvas flex h-12 w-12 items-center justify-center rounded-xl ${stat.iconColor}`}
                       >
                         <Icon className="h-6 w-6" />
                       </div>
@@ -406,43 +406,41 @@ export function ProfilePageClient({
             {/* Collaboration card */}
             <div className="card-luxury overflow-hidden p-6">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5">
-                  <Users className="text-hm-stone-400 h-5 w-5" />
+                <div className="bg-hm-canvas flex h-10 w-10 items-center justify-center rounded-xl">
+                  <Users className="text-hm-muted h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="text-hm-stone-200 font-medium">
-                    Collaboration
-                  </h3>
-                  <p className="text-hm-stone-500 text-xs">Household status</p>
+                  <h3 className="text-hm-ink font-medium">Collaboration</h3>
+                  <p className="text-hm-muted text-xs">Household status</p>
                 </div>
               </div>
 
               <div className="mt-6">
                 {hasHousehold ? (
                   <div className="space-y-4">
-                    <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4">
+                    <div className="rounded-xl border border-emerald-600/25 bg-emerald-50 p-4">
                       <div className="flex items-center gap-2">
-                        <Sparkles className="h-4 w-4 text-emerald-400" />
-                        <p className="text-xs font-medium tracking-wide text-emerald-300 uppercase">
+                        <Sparkles className="h-4 w-4 text-emerald-600" />
+                        <p className="text-xs font-medium tracking-wide text-emerald-700 uppercase">
                           Active Household
                         </p>
                       </div>
-                      <p className="text-hm-stone-200 mt-2 text-lg font-medium">
+                      <p className="text-hm-ink mt-2 text-lg font-medium">
                         {profile.household?.name}
                       </p>
                     </div>
 
-                    <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
-                      <p className="text-hm-stone-500 text-[10px] font-medium tracking-[0.15em] uppercase">
+                    <div className="border-hm-border bg-hm-canvas rounded-xl border p-4">
+                      <p className="text-hm-muted text-[10px] font-medium tracking-[0.15em] uppercase">
                         Join Code
                       </p>
                       <div className="mt-2 flex items-center gap-2">
-                        <code className="text-hm-stone-400 flex-1 truncate rounded bg-white/5 px-2 py-1 font-mono text-xs">
+                        <code className="text-hm-muted bg-hm-canvas flex-1 truncate rounded px-2 py-1 font-mono text-xs">
                           {profile.household?.id}
                         </code>
                         <button
                           onClick={copyHouseholdCode}
-                          className="text-hm-stone-400 flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
+                          className="text-hm-muted border-hm-border bg-hm-surface hover:border-hm-border-strong hover:bg-hm-border/40 hover:text-hm-ink flex h-8 w-8 items-center justify-center rounded-lg border transition-all"
                         >
                           <AnimatePresence mode="wait">
                             {codeCopied ? (
@@ -452,7 +450,7 @@ export function ProfilePageClient({
                                 animate={{ scale: 1 }}
                                 exit={{ scale: 0 }}
                               >
-                                <Check className="h-3.5 w-3.5 text-emerald-400" />
+                                <Check className="h-3.5 w-3.5 text-emerald-600" />
                               </m.div>
                             ) : (
                               <m.div
@@ -470,9 +468,9 @@ export function ProfilePageClient({
                     </div>
                   </div>
                 ) : (
-                  <div className="rounded-xl border border-dashed border-white/10 bg-white/[0.02] p-4 text-center">
-                    <Users className="text-hm-stone-500 mx-auto h-8 w-8" />
-                    <p className="text-hm-stone-400 mt-2 text-sm">
+                  <div className="border-hm-border bg-hm-canvas rounded-xl border border-dashed p-4 text-center">
+                    <Users className="text-hm-muted mx-auto h-8 w-8" />
+                    <p className="text-hm-muted mt-2 text-sm">
                       Create or join a household to discover mutual likes and
                       collaborate on your home search.
                     </p>
@@ -485,7 +483,7 @@ export function ProfilePageClient({
                   type="button"
                   variant="outline"
                   onClick={() => setActiveTab('household')}
-                  className="text-hm-stone-300 border-white/10 bg-white/5 text-xs transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
+                  className="text-hm-ink-soft border-hm-border bg-hm-surface hover:border-hm-border-strong hover:bg-hm-border/40 hover:text-hm-ink text-xs transition-all"
                 >
                   <Home className="mr-1.5 h-3.5 w-3.5" />
                   Household
@@ -494,7 +492,7 @@ export function ProfilePageClient({
                   type="button"
                   variant="outline"
                   onClick={() => setActiveTab('activity')}
-                  className="text-hm-stone-300 border-white/10 bg-white/5 text-xs transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
+                  className="text-hm-ink-soft border-hm-border bg-hm-surface hover:border-hm-border-strong hover:bg-hm-border/40 hover:text-hm-ink text-xs transition-all"
                 >
                   <Activity className="mr-1.5 h-3.5 w-3.5" />
                   Activity
@@ -514,7 +512,7 @@ export function ProfilePageClient({
               onValueChange={setActiveTab}
               className="space-y-6"
             >
-              <TabsList className="inline-flex h-auto w-full gap-1 rounded-xl border border-white/[0.06] bg-white/[0.02] p-1 backdrop-blur-sm sm:w-auto">
+              <TabsList className="border-hm-border bg-hm-canvas inline-flex h-auto w-full gap-1 rounded-xl border p-1 backdrop-blur-sm sm:w-auto">
                 {[
                   { value: 'profile', label: 'Profile', icon: UserIcon },
                   { value: 'household', label: 'Household', icon: Home },
@@ -526,7 +524,7 @@ export function ProfilePageClient({
                     <TabsTrigger
                       key={tab.value}
                       value={tab.value}
-                      className="text-hm-stone-400 relative flex-1 rounded-lg px-4 py-2.5 text-sm transition-all data-[state=active]:bg-white/10 data-[state=active]:text-white data-[state=active]:shadow-lg sm:flex-none sm:px-6"
+                      className="text-hm-muted data-[state=active]:text-hm-ink data-[state=active]:bg-hm-surface relative flex-1 rounded-lg px-4 py-2.5 text-sm transition-all data-[state=active]:shadow-lg sm:flex-none sm:px-6"
                     >
                       <Icon className="mr-2 h-4 w-4" />
                       {tab.label}
@@ -550,14 +548,14 @@ export function ProfilePageClient({
                         className="card-luxury overflow-hidden p-6 sm:p-8"
                       >
                         <div className="mb-6 flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5">
-                            <UserIcon className="text-hm-stone-400 h-5 w-5" />
+                          <div className="bg-hm-canvas flex h-10 w-10 items-center justify-center rounded-xl">
+                            <UserIcon className="text-hm-muted h-5 w-5" />
                           </div>
                           <div>
-                            <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">
+                            <h2 className="font-heading text-hm-ink text-xl font-semibold">
                               Profile Information
                             </h2>
-                            <p className="text-hm-stone-500 text-sm">
+                            <p className="text-hm-muted text-sm">
                               Update your personal details
                             </p>
                           </div>
@@ -613,14 +611,14 @@ export function ProfilePageClient({
                         className="card-luxury overflow-hidden p-6 sm:p-8"
                       >
                         <div className="mb-6 flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5">
-                            <Palette className="text-hm-stone-400 h-5 w-5" />
+                          <div className="bg-hm-canvas flex h-10 w-10 items-center justify-center rounded-xl">
+                            <Palette className="text-hm-muted h-5 w-5" />
                           </div>
                           <div>
-                            <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">
+                            <h2 className="font-heading text-hm-ink text-xl font-semibold">
                               Taste Profile
                             </h2>
-                            <p className="text-hm-stone-500 text-sm">
+                            <p className="text-hm-muted text-sm">
                               Aesthetic preferences and lifestyle priorities
                             </p>
                           </div>

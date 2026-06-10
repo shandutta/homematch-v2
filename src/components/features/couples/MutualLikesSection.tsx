@@ -18,7 +18,6 @@ import { MotionDiv } from '@/components/ui/motion-components'
 import { MutualLikesBadge } from './MutualLikesBadge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { toast } from '@/lib/utils/toast'
-import { dashboardTokens } from '@/lib/styles/dashboard-tokens'
 import { useMutualLikes } from '@/hooks/useCouples'
 
 interface MutualLike {
@@ -106,25 +105,21 @@ export function MutualLikesSection({
   if (loading) {
     return (
       <Card
-        className={`min-h-[320px] border-white/10 ${className}`}
-        style={{
-          backgroundColor: dashboardTokens.colors.background.cardDark,
-          borderColor: dashboardTokens.colors.secondary[700],
-        }}
+        className={`border-hm-border min-h-[320px] ${className}`}
         data-testid="mutual-likes-loading"
       >
         <CardHeader>
-          <CardTitle className="text-hm-stone-100 flex items-center gap-2 text-xl">
+          <CardTitle className="text-hm-ink flex items-center gap-2 text-xl">
             <div className="relative">
-              <Heart className="h-5 w-5 fill-current text-pink-400/50" />
-              <Users className="absolute -top-1 -right-1 h-4 w-4 text-purple-400/50" />
+              <Heart className="text-couples-primary/50 h-5 w-5 fill-current" />
+              <Users className="text-couples-secondary/50 absolute -top-1 -right-1 h-4 w-4" />
             </div>
             <span>Shared Likes</span>
             <MotionDiv
               animate={{ rotate: 360 }}
               transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
             >
-              <div className="h-4 w-4 rounded-full border-2 border-pink-400/30 border-t-pink-400" />
+              <div className="border-couples-primary/30 border-t-couples-primary h-4 w-4 rounded-full border-2" />
             </MotionDiv>
           </CardTitle>
         </CardHeader>
@@ -135,17 +130,17 @@ export function MutualLikesSection({
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
-              className="flex items-center gap-3 rounded-lg bg-white/5 p-3"
+              className="bg-hm-canvas flex items-center gap-3 rounded-lg p-3"
             >
-              <Skeleton className="h-16 w-16 rounded-md bg-white/10" />
+              <Skeleton className="bg-hm-border/60 h-16 w-16 rounded-md" />
               <div className="flex-1 space-y-2">
-                <Skeleton className="h-4 w-full bg-white/10" />
+                <Skeleton className="bg-hm-border/60 h-4 w-full" />
                 <Skeleton className="h-5 w-20 bg-green-400/20" />
                 <div className="flex gap-4">
-                  <Skeleton className="h-3 w-12 bg-white/10" />
-                  <Skeleton className="h-3 w-12 bg-white/10" />
+                  <Skeleton className="bg-hm-border/60 h-3 w-12" />
+                  <Skeleton className="bg-hm-border/60 h-3 w-12" />
                 </div>
-                <Skeleton className="h-3 w-24 bg-white/10" />
+                <Skeleton className="bg-hm-border/60 h-3 w-24" />
               </div>
             </MotionDiv>
           ))}
@@ -158,14 +153,10 @@ export function MutualLikesSection({
     return (
       <Card
         className={`border-couples-accent/20 min-h-[320px] ${className}`}
-        style={{
-          backgroundColor: dashboardTokens.colors.background.cardDark,
-          borderColor: dashboardTokens.colors.secondary[700],
-        }}
         data-testid="mutual-likes-error"
       >
         <CardHeader>
-          <CardTitle className="text-hm-stone-100 flex items-center gap-2 text-xl">
+          <CardTitle className="text-hm-ink flex items-center gap-2 text-xl">
             <div className="relative">
               <Heart className="text-couples-accent/50 h-5 w-5 fill-current" />
               <Users className="text-couples-accent/50 absolute -top-1 -right-1 h-4 w-4" />
@@ -183,7 +174,7 @@ export function MutualLikesSection({
               <Heart className="text-couples-accent/30 mx-auto mb-4 h-12 w-12 fill-current" />
             </MotionDiv>
 
-            <h3 className="text-hm-stone-100 mb-2 text-lg font-semibold">
+            <h3 className="text-hm-ink mb-2 text-lg font-semibold">
               Couldn&apos;t load mutual likes
             </h3>
 
@@ -207,14 +198,10 @@ export function MutualLikesSection({
     return (
       <Card
         className={`border-couples-primary/20 min-h-[320px] ${className}`}
-        style={{
-          backgroundColor: dashboardTokens.colors.background.cardDark,
-          borderColor: dashboardTokens.colors.secondary[700],
-        }}
         data-testid="mutual-likes-empty"
       >
         <CardHeader>
-          <CardTitle className="text-hm-stone-100 flex items-center gap-2 text-xl">
+          <CardTitle className="text-hm-ink flex items-center gap-2 text-xl">
             <div className="relative">
               <Heart className="fill-couples-primary text-couples-primary h-5 w-5" />
               <Users className="text-couples-secondary absolute -top-1 -right-1 h-4 w-4" />
@@ -268,15 +255,15 @@ export function MutualLikesSection({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <h3 className="text-hm-stone-100 mb-2 text-lg font-semibold">
+              <h3 className="text-hm-ink mb-2 text-lg font-semibold">
                 No mutual likes yet!
               </h3>
 
-              <p className="text-hm-stone-200 mb-1 text-sm">
+              <p className="text-hm-ink mb-1 text-sm">
                 Properties everyone likes will appear here
               </p>
 
-              <div className="text-hm-stone-300 flex items-center justify-center gap-2 text-xs">
+              <div className="text-hm-ink-soft flex items-center justify-center gap-2 text-xs">
                 <Star className="h-3 w-3" />
                 <span>Keep swiping to find your first shared favorite</span>
               </div>
@@ -290,15 +277,11 @@ export function MutualLikesSection({
   return (
     <Card
       className={`min-h-[320px] ${className}`}
-      style={{
-        backgroundColor: dashboardTokens.colors.background.cardDark,
-        borderColor: dashboardTokens.colors.secondary[700],
-      }}
       data-testid="mutual-likes-list"
     >
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-hm-stone-100 flex items-center gap-2 text-xl">
+          <CardTitle className="text-hm-ink flex items-center gap-2 text-xl">
             <Heart className="fill-couples-primary text-couples-primary h-5 w-5" />
             Shared Likes ({mutualLikes.length})
             <Users className="text-couples-secondary h-5 w-5" />
@@ -334,7 +317,7 @@ export function MutualLikesSection({
               <Link
                 href={`/properties/${like.property_id}?returnTo=/dashboard`}
               >
-                <div className="group hover:border-couples-primary/30 relative rounded-lg border border-white/10 bg-white/5 p-3 transition-all hover:bg-white/10">
+                <div className="group hover:border-couples-primary/30 border-hm-border bg-hm-canvas hover:bg-hm-border/60 relative rounded-lg border p-3 transition-all">
                   <div className="flex items-start gap-3">
                     <div className="relative h-16 w-16 overflow-hidden rounded-md">
                       <PropertyImage
@@ -348,7 +331,7 @@ export function MutualLikesSection({
 
                     <div className="min-w-0 flex-1">
                       <div className="mb-1 flex items-start justify-between gap-2">
-                        <p className="text-hm-stone-100 truncate text-sm font-medium">
+                        <p className="text-hm-ink truncate text-sm font-medium">
                           {like.property?.address ||
                             `Property ${like.property_id.slice(0, 8)}`}
                         </p>
@@ -360,7 +343,7 @@ export function MutualLikesSection({
                       </div>
 
                       {like.property && (
-                        <div className="text-hm-stone-200 flex items-center gap-3 text-xs">
+                        <div className="text-hm-ink flex items-center gap-3 text-xs">
                           <span className="text-hm-success font-semibold">
                             ${(like.property.price / 1000).toFixed(0)}k
                           </span>
@@ -369,14 +352,14 @@ export function MutualLikesSection({
                         </div>
                       )}
 
-                      <p className="text-hm-stone-300 mt-1 text-xs">
+                      <p className="text-hm-ink-soft mt-1 text-xs">
                         Liked{' '}
                         {new Date(like.last_liked_at).toLocaleDateString()}
                       </p>
                     </div>
                   </div>
 
-                  <ChevronRight className="text-hm-stone-300 absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100" />
+                  <ChevronRight className="text-hm-ink-soft absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100" />
                 </div>
               </Link>
             </MotionDiv>

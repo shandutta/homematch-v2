@@ -22,7 +22,7 @@ export default async function JoinHouseholdPage() {
   // create the row when they accept an invitation.
   if (!userCtx.profileId) {
     return (
-      <div className="gradient-grid-bg dark text-foreground flex min-h-screen items-center justify-center p-4">
+      <div className="gradient-grid-bg text-foreground flex min-h-screen items-center justify-center p-4">
         <JoinHouseholdForm userId={userCtx.authId} />
       </div>
     )
@@ -42,7 +42,7 @@ export default async function JoinHouseholdPage() {
   }
 
   return (
-    <div className="gradient-grid-bg dark text-foreground flex min-h-screen items-center justify-center p-4">
+    <div className="gradient-grid-bg text-foreground flex min-h-screen items-center justify-center p-4">
       <JoinHouseholdForm userId={userCtx.profileId} />
     </div>
   )

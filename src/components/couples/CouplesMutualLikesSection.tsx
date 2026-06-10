@@ -49,12 +49,12 @@ export function CouplesMutualLikesSection({
   // Loading state
   if (loading) {
     return (
-      <Card className="card-glassmorphism-style border-pink-500/20">
+      <Card className="card-glassmorphism-style border-couples-primary/20">
         <CardHeader>
-          <CardTitle className="text-hm-stone-100 flex items-center gap-2 text-xl">
+          <CardTitle className="text-hm-ink flex items-center gap-2 text-xl">
             <div className="relative">
-              <Heart className="h-6 w-6 fill-current text-pink-400/30" />
-              <Users className="absolute -top-1 -right-1 h-4 w-4 text-purple-400/30" />
+              <Heart className="text-couples-primary/30 h-6 w-6 fill-current" />
+              <Users className="text-couples-secondary/30 absolute -top-1 -right-1 h-4 w-4" />
             </div>
             <div className="flex items-center gap-2">
               Mutual Likes
@@ -62,7 +62,7 @@ export function CouplesMutualLikesSection({
                 animate={{ rotate: 360 }}
                 transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
               >
-                <div className="h-4 w-4 rounded-full border-2 border-pink-400/30 border-t-pink-400" />
+                <div className="border-couples-primary/30 border-t-couples-primary h-4 w-4 rounded-full border-2" />
               </MotionDiv>
             </div>
           </CardTitle>
@@ -75,7 +75,7 @@ export function CouplesMutualLikesSection({
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
-                className="rounded-lg border border-pink-500/10 bg-gradient-to-br from-pink-500/5 via-purple-500/5 to-rose-500/5 p-4"
+                className="border-couples-primary/10 from-couples-primary/5 via-couples-secondary/5 to-couples-accent/5 rounded-lg border bg-gradient-to-br p-4"
               >
                 <div className="flex gap-4">
                   <div className="h-20 w-20 animate-pulse rounded-lg bg-white/10" />
@@ -103,7 +103,7 @@ export function CouplesMutualLikesSection({
     return (
       <Card className="card-glassmorphism-style border-red-500/20">
         <CardHeader>
-          <CardTitle className="text-hm-stone-100 flex items-center gap-2 text-xl">
+          <CardTitle className="text-hm-ink flex items-center gap-2 text-xl">
             <div className="relative">
               <Heart className="h-6 w-6 fill-current text-red-400/50" />
               <Users className="absolute -top-1 -right-1 h-4 w-4 text-red-400/50" />
@@ -116,7 +116,7 @@ export function CouplesMutualLikesSection({
             <div className="mb-4 flex justify-center">
               <Heart className="h-12 w-12 fill-current text-red-400/30" />
             </div>
-            <h3 className="text-hm-stone-100 mb-2 text-lg font-semibold">
+            <h3 className="text-hm-ink mb-2 text-lg font-semibold">
               Couldn&apos;t load mutual likes
             </h3>
             <p className="text-sm text-red-400/80">{error}</p>
@@ -130,12 +130,12 @@ export function CouplesMutualLikesSection({
     const hasIndividualLikes = (householdStats?.total_household_likes || 0) > 0
 
     return (
-      <Card className="card-glassmorphism-style border-pink-500/20">
+      <Card className="card-glassmorphism-style border-couples-primary/20">
         <CardHeader>
-          <CardTitle className="text-hm-stone-100 flex items-center gap-2 text-xl">
+          <CardTitle className="text-hm-ink flex items-center gap-2 text-xl">
             <div className="relative">
-              <Heart className="h-6 w-6 fill-pink-400 text-pink-400" />
-              <Users className="absolute -top-1 -right-1 h-4 w-4 text-purple-400" />
+              <Heart className="fill-couples-primary text-couples-primary h-6 w-6" />
+              <Users className="text-couples-secondary absolute -top-1 -right-1 h-4 w-4" />
             </div>
             Mutual Likes
           </CardTitle>
@@ -152,7 +152,7 @@ export function CouplesMutualLikesSection({
                   }}
                   transition={{ duration: 4, repeat: Infinity }}
                 >
-                  <Heart className="h-16 w-16 fill-current text-pink-400/30" />
+                  <Heart className="text-couples-primary/30 h-16 w-16 fill-current" />
                 </MotionDiv>
                 <MotionDiv
                   animate={{
@@ -161,7 +161,7 @@ export function CouplesMutualLikesSection({
                   }}
                   transition={{ duration: 4, repeat: Infinity, delay: 2 }}
                 >
-                  <Heart className="absolute top-0 left-8 h-16 w-16 fill-current text-purple-400/30" />
+                  <Heart className="text-couples-secondary/30 absolute top-0 left-8 h-16 w-16 fill-current" />
                 </MotionDiv>
 
                 {/* Sparkles effect */}
@@ -195,20 +195,20 @@ export function CouplesMutualLikesSection({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              <h3 className="text-hm-stone-100 mb-3 text-2xl font-bold">
+              <h3 className="text-hm-ink mb-3 text-2xl font-bold">
                 {hasIndividualLikes
                   ? 'Find Your First Match!'
                   : 'No mutual likes yet!'}
               </h3>
 
-              <p className="text-hm-stone-300 mx-auto mb-2 max-w-md">
+              <p className="text-hm-ink-soft mx-auto mb-2 max-w-md">
                 {hasIndividualLikes
                   ? 'Good activity so far! Keep going to discover properties everyone likes.'
                   : 'Start swiping to discover homes everyone likes'}
               </p>
 
               {hasIndividualLikes && (
-                <div className="text-hm-stone-400 mb-4 flex items-center justify-center gap-2 text-sm">
+                <div className="text-hm-muted mb-4 flex items-center justify-center gap-2 text-sm">
                   <Star className="h-4 w-4 text-yellow-400" />
                   <span>
                     You&apos;ve liked {householdStats?.total_household_likes}{' '}
@@ -220,7 +220,7 @@ export function CouplesMutualLikesSection({
               <div className="mt-6 flex flex-wrap justify-center gap-3">
                 <Button
                   asChild
-                  className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600"
+                  className="from-couples-primary to-couples-secondary bg-gradient-to-r hover:opacity-90"
                   size="lg"
                 >
                   <Link href="/dashboard">
@@ -235,7 +235,7 @@ export function CouplesMutualLikesSection({
                   <Button
                     variant="outline"
                     asChild
-                    className="border-pink-500/30 text-pink-400 hover:bg-pink-500/10"
+                    className="border-couples-primary/30 text-couples-primary hover:bg-couples-primary/10"
                   >
                     <Link href="/couples">
                       <ArrowRight className="mr-2 h-4 w-4" />
@@ -252,13 +252,13 @@ export function CouplesMutualLikesSection({
   }
 
   return (
-    <Card className="card-glassmorphism-style border-pink-500/20">
+    <Card className="card-glassmorphism-style border-couples-primary/20">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-hm-stone-100 flex items-center gap-2 text-xl">
+          <CardTitle className="text-hm-ink flex items-center gap-2 text-xl">
             <div className="relative">
-              <Heart className="h-6 w-6 fill-pink-400 text-pink-400" />
-              <Users className="absolute -top-1 -right-1 h-4 w-4 text-purple-400" />
+              <Heart className="fill-couples-primary text-couples-primary h-6 w-6" />
+              <Users className="text-couples-secondary absolute -top-1 -right-1 h-4 w-4" />
             </div>
             Mutual Likes ({mutualLikes.length})
           </CardTitle>
@@ -266,7 +266,7 @@ export function CouplesMutualLikesSection({
             <Button variant="ghost" size="sm" asChild>
               <Link
                 href="/dashboard/mutual-likes"
-                className="text-pink-400 hover:text-pink-300"
+                className="text-couples-primary hover:opacity-80"
               >
                 View all
                 <ChevronRight className="ml-1 h-4 w-4" />
@@ -299,7 +299,7 @@ export function CouplesMutualLikesSection({
                 <Link
                   href={`/properties/${like.property_id}?returnTo=/couples`}
                 >
-                  <div className="group relative rounded-lg border border-pink-500/20 bg-gradient-to-br from-pink-500/5 via-purple-500/5 to-rose-500/5 p-4 transition-all hover:border-pink-400/40 hover:bg-gradient-to-br hover:from-pink-500/10 hover:via-purple-500/10 hover:to-rose-500/10 hover:shadow-lg hover:shadow-pink-500/10">
+                  <div className="group border-couples-primary/20 from-couples-primary/5 via-couples-secondary/5 to-couples-accent/5 hover:border-couples-primary/40 hover:from-couples-primary/10 hover:via-couples-secondary/10 hover:to-couples-accent/10 hover:shadow-couples-primary/10 relative rounded-lg border bg-gradient-to-br p-4 transition-all hover:bg-gradient-to-br hover:shadow-lg">
                     <div className="flex gap-4">
                       <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg">
                         <PropertyImage
@@ -311,14 +311,14 @@ export function CouplesMutualLikesSection({
                         />
 
                         {/* Mutual like badge */}
-                        <div className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white/20 bg-gradient-to-r from-pink-500 to-purple-500 text-xs font-semibold text-white">
+                        <div className="from-couples-primary to-couples-secondary absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white/20 bg-gradient-to-r text-xs font-semibold text-white">
                           {like.liked_by_count}
                         </div>
                       </div>
 
                       <div className="min-w-0 flex-1">
                         <div className="mb-2 flex items-start justify-between gap-2">
-                          <h3 className="text-hm-stone-100 truncate font-semibold">
+                          <h3 className="text-hm-ink truncate font-semibold">
                             {like.property?.address ||
                               `Property ${like.property_id.slice(0, 8)}`}
                           </h3>
@@ -332,7 +332,7 @@ export function CouplesMutualLikesSection({
                               </span>
                             </div>
 
-                            <div className="text-hm-stone-300 mb-2 flex items-center gap-4 text-xs">
+                            <div className="text-hm-ink-soft mb-2 flex items-center gap-4 text-xs">
                               <div className="flex items-center gap-1">
                                 <Bed className="h-3 w-3" />
                                 <span>{like.property.bedrooms}</span>
@@ -354,7 +354,7 @@ export function CouplesMutualLikesSection({
                           </>
                         )}
 
-                        <div className="text-hm-stone-400 flex items-center gap-1 text-xs">
+                        <div className="text-hm-muted flex items-center gap-1 text-xs">
                           <Calendar className="h-3 w-3" />
                           <span>
                             Liked{' '}
@@ -364,10 +364,10 @@ export function CouplesMutualLikesSection({
                       </div>
                     </div>
 
-                    <ChevronRight className="text-hm-stone-400 absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100" />
+                    <ChevronRight className="text-hm-muted absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100" />
 
                     {/* Glow hover effect */}
-                    <div className="pointer-events-none absolute inset-0 rounded-lg bg-gradient-to-r from-pink-500/0 via-purple-500/0 to-rose-500/0 transition-all group-hover:from-pink-500/5 group-hover:via-purple-500/5 group-hover:to-rose-500/5" />
+                    <div className="from-couples-primary/0 via-couples-secondary/0 to-couples-accent/0 group-hover:from-couples-primary/5 group-hover:via-couples-secondary/5 group-hover:to-couples-accent/5 pointer-events-none absolute inset-0 rounded-lg bg-gradient-to-r transition-all" />
                   </div>
                 </Link>
               </MotionDiv>
@@ -380,7 +380,7 @@ export function CouplesMutualLikesSection({
             <Button
               variant="outline"
               asChild
-              className="border-pink-500/30 text-pink-400 hover:bg-pink-500/10"
+              className="border-couples-primary/30 text-couples-primary hover:bg-couples-primary/10"
             >
               <Link href="/dashboard/mutual-likes">
                 View All {mutualLikes.length} Mutual Likes

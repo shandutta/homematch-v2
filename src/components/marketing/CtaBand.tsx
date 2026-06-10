@@ -55,9 +55,9 @@ export function CtaBand() {
   const shouldReduceMotion = useReducedMotion()
 
   return (
-    <section className="bg-hm-ivory-100 text-hm-stone-900 relative overflow-hidden py-16 sm:py-20">
+    <section className="bg-hm-surface text-hm-ink relative overflow-hidden py-16 sm:py-20">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(900px_420px_at_50%_0%,rgba(194,129,65,0.16),transparent_65%)]" />
-      <div className="from-hm-ivory-50 pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b to-transparent" />
+      <div className="from-hm-canvas pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b to-transparent" />
 
       <div className="relative z-10 container mx-auto px-4">
         <MotionDiv
@@ -71,7 +71,7 @@ export function CtaBand() {
           {/* Animated headline with word reveal */}
           <WordReveal
             text="Bring your partner into the search."
-            className="text-hm-stone-900 text-3xl font-semibold tracking-[-0.03em] sm:text-4xl"
+            className="text-hm-ink text-3xl font-semibold tracking-[-0.03em] sm:text-4xl"
           />
 
           <MotionDiv
@@ -85,7 +85,7 @@ export function CtaBand() {
             }
           >
             <p
-              className="text-hm-stone-600 mx-auto mt-3 sm:text-lg"
+              className="text-hm-faint mx-auto mt-3 sm:text-lg"
               style={{ maxWidth: '42rem', fontFamily: 'var(--font-body)' }}
             >
               Create your household, invite the people deciding with you, and
@@ -124,7 +124,7 @@ export function CtaBand() {
               >
                 {/* Animated gradient background on hover */}
                 <span
-                  className="from-hm-amber-400 via-hm-amber-500 to-hm-stone-300 absolute inset-0 rounded-full bg-gradient-to-r opacity-0 blur-md transition-all duration-500 group-hover:opacity-60 group-hover:blur-lg"
+                  className="from-hm-accent via-hm-accent-strong to-hm-surface absolute inset-0 rounded-full bg-gradient-to-r opacity-0 blur-md transition-all duration-500 group-hover:opacity-60 group-hover:blur-lg"
                   aria-hidden="true"
                 />
 
@@ -147,7 +147,7 @@ export function CtaBand() {
             <Button
               size="lg"
               variant="ghost"
-              className="text-hm-stone-600 hover:text-hm-stone-900 w-full bg-transparent text-base font-medium transition-colors duration-200 hover:bg-white/60 sm:w-auto"
+              className="text-hm-faint hover:text-hm-ink w-full bg-transparent text-base font-medium transition-colors duration-200 hover:bg-white/60 sm:w-auto"
               asChild
             >
               <Link href="/login">Sign in</Link>

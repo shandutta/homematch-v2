@@ -78,7 +78,7 @@ export function InteractionsListPage({
     return {
       title: `No ${title.toLowerCase()} yet`,
       description: 'Start swiping to see properties here.',
-      icon: <Heart className="text-hm-amber-400 mx-auto h-10 w-10" />,
+      icon: <Heart className="text-hm-accent mx-auto h-10 w-10" />,
       cta: 'Explore',
     }
   })()
@@ -88,7 +88,7 @@ export function InteractionsListPage({
 
   return (
     <div className="space-y-6 sm:space-y-8">
-      <h1 className="font-display text-hm-stone-200 text-2xl font-medium tracking-tight sm:text-4xl">
+      <h1 className="font-display text-hm-ink text-2xl font-medium tracking-tight sm:text-4xl">
         {title}
       </h1>
 
@@ -99,24 +99,24 @@ export function InteractionsListPage({
       ) : properties.length === 0 ? (
         <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-6 py-16 text-center backdrop-blur">
           {emptyState.icon}
-          <h2 className="font-display text-hm-stone-200 mt-5 text-2xl font-medium tracking-tight">
+          <h2 className="font-display text-hm-ink mt-5 text-2xl font-medium tracking-tight">
             {emptyState.title}
           </h2>
-          <p className="text-hm-stone-500 mx-auto mt-2 max-w-xl text-sm sm:text-base">
+          <p className="text-hm-muted mx-auto mt-2 max-w-xl text-sm sm:text-base">
             {emptyState.description}
           </p>
 
           <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Button
               asChild
-              className="border-hm-amber-400/30 bg-hm-amber-400/10 text-hm-amber-400 hover:border-hm-amber-400/50 hover:bg-hm-amber-400/20 rounded-full border px-8 py-2 font-medium transition-all duration-200"
+              className="border-hm-accent/30 bg-hm-accent/10 text-hm-accent hover:border-hm-accent/50 hover:bg-hm-accent/20 rounded-full border px-8 py-2 font-medium transition-all duration-200"
             >
               <Link href="/dashboard">{emptyState.cta}</Link>
             </Button>
             <Button
               asChild
               variant="ghost"
-              className="text-hm-stone-400 hover:text-hm-stone-200"
+              className="text-hm-muted hover:text-hm-ink"
             >
               <Link href="/couples">Household hub</Link>
             </Button>
@@ -169,7 +169,7 @@ export function InteractionsListPage({
                     <button
                       type="button"
                       aria-label="Remove from likes"
-                      className="group bg-hm-obsidian-800 text-hm-error hover:border-hm-error/30 hover:bg-hm-error/10 relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-white/10 transition-all duration-200 hover:w-40 focus-visible:w-40 focus-visible:outline-none disabled:opacity-60"
+                      className="group bg-hm-border text-hm-error hover:border-hm-error/30 hover:bg-hm-error/10 relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-white/10 transition-all duration-200 hover:w-40 focus-visible:w-40 focus-visible:outline-none disabled:opacity-60"
                       disabled={isRemoving}
                       onClick={(e) => {
                         e.stopPropagation()
@@ -201,7 +201,7 @@ export function InteractionsListPage({
                     <button
                       type="button"
                       aria-label="Like this home"
-                      className="group bg-hm-obsidian-800 text-hm-success hover:border-hm-success/30 hover:bg-hm-success/10 relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-white/10 transition-all duration-200 hover:w-36 focus-visible:w-36 focus-visible:outline-none disabled:opacity-60"
+                      className="group bg-hm-border text-hm-success hover:border-hm-success/30 hover:bg-hm-success/10 relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-white/10 transition-all duration-200 hover:w-36 focus-visible:w-36 focus-visible:outline-none disabled:opacity-60"
                       disabled={isMutatingDecision}
                       onClick={(e) => {
                         e.stopPropagation()
@@ -232,8 +232,8 @@ export function InteractionsListPage({
                           isPassSelected
                             ? 'border-hm-error/50 bg-hm-error/20 ring-hm-error/30 scale-110 ring-2'
                             : isLikeSelected
-                              ? 'bg-hm-obsidian-800/50 border-white/5 opacity-40'
-                              : 'bg-hm-obsidian-800 hover:border-hm-error/30 hover:bg-hm-error/10 border-white/10 hover:w-20 focus-visible:w-20'
+                              ? 'bg-hm-border/50 border-white/5 opacity-40'
+                              : 'bg-hm-border hover:border-hm-error/30 hover:bg-hm-error/10 border-white/10 hover:w-20 focus-visible:w-20'
                         } text-hm-error`}
                         disabled={isMutatingDecision || !!decision}
                         onClick={(e) => {
@@ -259,8 +259,8 @@ export function InteractionsListPage({
                           isLikeSelected
                             ? 'border-hm-success/50 bg-hm-success/20 ring-hm-success/30 scale-110 ring-2'
                             : isPassSelected
-                              ? 'bg-hm-obsidian-800/50 border-white/5 opacity-40'
-                              : 'bg-hm-obsidian-800 hover:border-hm-success/30 hover:bg-hm-success/10 border-white/10 hover:w-20 focus-visible:w-20'
+                              ? 'bg-hm-border/50 border-white/5 opacity-40'
+                              : 'bg-hm-border hover:border-hm-success/30 hover:bg-hm-success/10 border-white/10 hover:w-20 focus-visible:w-20'
                         } text-hm-success`}
                         disabled={isMutatingDecision || !!decision}
                         onClick={(e) => {
@@ -320,7 +320,7 @@ export function InteractionsListPage({
               <Button
                 onClick={() => fetchNextPage()}
                 disabled={isFetchingNextPage}
-                className="border-hm-amber-400/30 bg-hm-amber-400/10 text-hm-amber-400 hover:border-hm-amber-400/50 hover:bg-hm-amber-400/20 rounded-full border px-8 py-2 font-medium transition-all duration-200"
+                className="border-hm-accent/30 bg-hm-accent/10 text-hm-accent hover:border-hm-accent/50 hover:bg-hm-accent/20 rounded-full border px-8 py-2 font-medium transition-all duration-200"
               >
                 {isFetchingNextPage ? 'Loading...' : 'Load More'}
               </Button>

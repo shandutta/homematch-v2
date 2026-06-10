@@ -58,9 +58,9 @@ export function CouplesActivityFeed({
 }: CouplesActivityFeedProps) {
   if (activity.length === 0) {
     return (
-      <Card className="card-glassmorphism-style border-hm-stone-600/60">
+      <Card className="card-glassmorphism-style border-hm-border/60">
         <CardHeader>
-          <CardTitle className="text-hm-stone-200 flex items-center gap-2 text-xl">
+          <CardTitle className="text-hm-ink flex items-center gap-2 text-xl">
             <Activity className="text-couples-secondary h-6 w-6" />
             Recent Activity
           </CardTitle>
@@ -75,15 +75,15 @@ export function CouplesActivityFeed({
                 <Activity className="text-couples-secondary/30 h-16 w-16" />
               </MotionDiv>
             </div>
-            <h3 className="text-hm-stone-200 mb-2 text-xl font-semibold">
+            <h3 className="text-hm-ink mb-2 text-xl font-semibold">
               No activity yet!
             </h3>
-            <p className="text-hm-stone-500 mb-4">
+            <p className="text-hm-muted mb-4">
               Start exploring properties to see your household activity here
             </p>
             <Button
               asChild
-              className="bg-hm-stone-300 hover:bg-hm-stone-200 text-white"
+              className="bg-hm-accent hover:bg-hm-accent-strong text-white"
             >
               <Link href="/dashboard">
                 Start Exploring
@@ -97,18 +97,18 @@ export function CouplesActivityFeed({
   }
 
   return (
-    <Card className="card-glassmorphism-style border-hm-stone-600/60">
+    <Card className="card-glassmorphism-style border-hm-border/60">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-hm-stone-200 flex items-center gap-2 text-xl">
-            <Activity className="h-6 w-6 text-purple-400" />
+          <CardTitle className="text-hm-ink flex items-center gap-2 text-xl">
+            <Activity className="text-couples-secondary h-6 w-6" />
             Recent Activity
           </CardTitle>
           {showViewAllLink && (
             <Button variant="ghost" size="sm" asChild>
               <Link
                 href="/dashboard/activity"
-                className="text-hm-amber-500 hover:text-hm-amber-600"
+                className="text-hm-link hover:text-hm-link-hover"
               >
                 View all activity
               </Link>
@@ -133,7 +133,7 @@ export function CouplesActivityFeed({
               <Link
                 href={`/properties/${item.property_id}?returnTo=${encodeURIComponent(returnToPath)}`}
               >
-                <div className="group border-hm-stone-600/60 bg-hm-obsidian-950/70 hover:border-hm-amber-400/25 hover:bg-hm-obsidian-900 relative rounded-lg border p-3 transition-all">
+                <div className="group border-hm-border/60 bg-hm-canvas/70 hover:border-hm-accent/25 hover:bg-hm-surface relative rounded-lg border p-3 transition-all">
                   <div className="flex items-start gap-3">
                     <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-md">
                       <PropertyImage
@@ -149,8 +149,8 @@ export function CouplesActivityFeed({
                       <div className="mb-1 flex items-start gap-2">
                         <div className="flex min-w-0 flex-1 items-center gap-2">
                           <div className="flex items-center gap-1">
-                            <User className="text-hm-stone-500 h-3 w-3" />
-                            <span className="text-hm-stone-200 truncate text-xs font-medium">
+                            <User className="text-hm-muted h-3 w-3" />
+                            <span className="text-hm-ink truncate text-xs font-medium">
                               {item.user_display_name || 'Someone'}
                             </span>
                           </div>
@@ -159,7 +159,7 @@ export function CouplesActivityFeed({
                             <Icon
                               className={`h-3 w-3 ${colorClass} ${item.interaction_type === 'like' ? 'fill-current' : ''}`}
                             />
-                            <span className="text-hm-stone-500 text-xs">
+                            <span className="text-hm-muted text-xs">
                               {actionText}
                             </span>
                           </div>
@@ -170,7 +170,7 @@ export function CouplesActivityFeed({
                               initial="initial"
                               animate="animate"
                               transition={normalTransition}
-                              className="border-hm-amber-400/20 bg-hm-obsidian-800 flex items-center gap-1 rounded-full border px-2 py-0.5"
+                              className="border-hm-accent/20 bg-hm-border flex items-center gap-1 rounded-full border px-2 py-0.5"
                             >
                               <Sparkles className="text-couples-primary h-3 w-3" />
                               <span className="text-couples-primary text-xs font-semibold">
@@ -180,7 +180,7 @@ export function CouplesActivityFeed({
                           )}
                         </div>
 
-                        <div className="text-hm-stone-500 flex items-center gap-1 text-xs">
+                        <div className="text-hm-muted flex items-center gap-1 text-xs">
                           <Clock className="h-3 w-3" />
                           <span>
                             {formatDistanceToNow(new Date(item.created_at), {
@@ -190,11 +190,11 @@ export function CouplesActivityFeed({
                         </div>
                       </div>
 
-                      <p className="text-hm-stone-200 mb-1 truncate text-sm font-medium">
+                      <p className="text-hm-ink mb-1 truncate text-sm font-medium">
                         {item.property_address}
                       </p>
 
-                      <div className="text-hm-stone-500 flex items-center gap-3 text-xs">
+                      <div className="text-hm-muted flex items-center gap-3 text-xs">
                         <span className="text-hm-success font-semibold">
                           {formatPrice(item.property_price)}
                         </span>
@@ -206,7 +206,7 @@ export function CouplesActivityFeed({
 
                   {/* Hover indicator */}
                   <div className="absolute top-1/2 right-3 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100">
-                    <div className="bg-hm-amber-400 h-2 w-2 rounded-full" />
+                    <div className="bg-hm-accent h-2 w-2 rounded-full" />
                   </div>
                 </div>
               </Link>
@@ -219,7 +219,7 @@ export function CouplesActivityFeed({
             <Button
               variant="outline"
               asChild
-              className="border-hm-stone-600/70 text-hm-stone-300 hover:bg-hm-obsidian-800 hover:text-hm-stone-200"
+              className="border-hm-border/70 text-hm-ink-soft hover:bg-hm-border hover:text-hm-ink"
             >
               <Link href="/dashboard/activity">
                 View Full Activity History

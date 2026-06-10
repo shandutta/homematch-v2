@@ -20,14 +20,14 @@ function BrokenImagePlaceholder({ className = '' }: { className?: string }) {
       data-testid="property-image-broken"
       role="img"
       aria-label="Property image unavailable"
-      className={`flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-slate-800 to-slate-900 grayscale ${className}`}
+      className={`flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-[#43301c] to-[#2b1e12] grayscale ${className}`}
     >
       <ImageOff
-        className="h-10 w-10 text-slate-500"
+        className="h-10 w-10 text-white/45"
         strokeWidth={1.5}
         aria-hidden="true"
       />
-      <span className="px-2 text-center text-[11px] font-medium tracking-wide text-slate-400 uppercase">
+      <span className="px-2 text-center text-[11px] font-medium tracking-wide text-white/55 uppercase">
         Image unavailable
       </span>
     </div>
@@ -59,16 +59,16 @@ const FALLBACK_IMAGES = [
   '/images/properties/house-3.svg',
 ]
 
-// Tiny dark-grey gradient SVG used as the blur placeholder for remote images.
-// Matches the obsidian theme, avoids a white flash, and ships ~150 bytes.
+// Tiny warm-toned gradient SVG used as the blur placeholder for remote images.
+// Matches the warm editorial theme, avoids a white flash, and ships ~150 bytes.
 const BLUR_DATA_URL =
   'data:image/svg+xml;base64,' +
   (typeof window === 'undefined'
     ? Buffer.from(
-        '<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1e293b"/><stop offset="1" stop-color="#0f172a"/></linearGradient></defs><rect width="8" height="8" fill="url(#g)"/></svg>'
+        '<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#43301c"/><stop offset="1" stop-color="#2b1e12"/></linearGradient></defs><rect width="8" height="8" fill="url(#g)"/></svg>'
       ).toString('base64')
     : btoa(
-        '<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1e293b"/><stop offset="1" stop-color="#0f172a"/></linearGradient></defs><rect width="8" height="8" fill="url(#g)"/></svg>'
+        '<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#43301c"/><stop offset="1" stop-color="#2b1e12"/></linearGradient></defs><rect width="8" height="8" fill="url(#g)"/></svg>'
       ))
 
 const BROKEN_IMAGE_PATH_PATTERNS = ['photo-1575517111478-7f6f2c59ebb0']
@@ -237,7 +237,7 @@ function ImageSkeleton() {
     <div
       data-testid="property-image-skeleton"
       aria-hidden="true"
-      className="pointer-events-none absolute inset-0 overflow-hidden bg-slate-900/40"
+      className="pointer-events-none absolute inset-0 overflow-hidden bg-[#2b1e12]/40"
     >
       <div className="absolute inset-0 animate-[propertyImageShimmer_1.6s_ease-in-out_infinite] bg-[linear-gradient(110deg,transparent_30%,rgba(255,255,255,0.08)_50%,transparent_70%)] bg-[length:200%_100%]" />
       <style>{`

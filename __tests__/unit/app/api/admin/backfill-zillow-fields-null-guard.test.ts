@@ -90,7 +90,7 @@ jest.mock('@/lib/api/fetch-timeout', () => ({
 }))
 
 // Stub the cross-route import so the LLM/vibes stack is never loaded.
-jest.mock('@/app/api/admin/generate-vibes-zillow/route', () => ({
+jest.mock('@/app/api/admin/generate-vibes-zillow/extract-amenities', () => ({
   __esModule: true,
   extractAmenities: () => ['pool'],
 }))

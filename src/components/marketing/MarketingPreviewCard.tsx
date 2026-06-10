@@ -72,7 +72,7 @@ export function MarketingPreviewCard({ className }: MarketingPreviewCardProps) {
     <m.div
       ref={cardRef}
       className={cn(
-        'shadow-card-glow relative overflow-hidden rounded-[24px] border border-white/10 bg-[#0f172a]/85 backdrop-blur-xl transition-shadow duration-300',
+        'shadow-card-glow relative overflow-hidden rounded-[24px] border border-white/10 bg-[#2b1e12]/85 backdrop-blur-xl transition-shadow duration-300',
         isHovered && 'shadow-card-glow-hover',
         className
       )}
@@ -91,7 +91,7 @@ export function MarketingPreviewCard({ className }: MarketingPreviewCardProps) {
         className="pointer-events-none absolute inset-0 rounded-[24px] opacity-0 transition-opacity duration-300"
         style={{
           background:
-            'radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(56,189,248,0.1), transparent 40%)',
+            'radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(183,121,31,0.1), transparent 40%)',
           opacity: isHovered ? 1 : 0,
         }}
       />
@@ -105,11 +105,11 @@ export function MarketingPreviewCard({ className }: MarketingPreviewCardProps) {
           className="object-cover"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-black/20 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#2b1e12] via-black/20 to-transparent" />
 
         {/* Price badge */}
         <m.div
-          className="absolute bottom-4 left-4 rounded-full bg-white/90 px-4 py-2 text-lg font-bold text-slate-900 shadow-lg backdrop-blur-sm"
+          className="text-hm-ink absolute bottom-4 left-4 rounded-full bg-white/90 px-4 py-2 text-lg font-bold shadow-lg backdrop-blur-sm"
           animate={
             isHovered && !prefersReducedMotion
               ? { scale: 1.05, y: -2 }
@@ -148,17 +148,17 @@ export function MarketingPreviewCard({ className }: MarketingPreviewCardProps) {
             <MotionDiv
               key={title}
               className={cn(
-                'absolute flex max-w-[210px] flex-col gap-1 rounded-2xl border border-white/20 bg-[#0f172a]/70 p-3 text-white shadow-[0_10px_24px_rgba(0,0,0,0.25)] backdrop-blur-xl sm:max-w-[230px]',
+                'absolute flex max-w-[210px] flex-col gap-1 rounded-2xl border border-white/20 bg-[#2b1e12]/70 p-3 text-white shadow-[0_10px_24px_rgba(0,0,0,0.25)] backdrop-blur-xl sm:max-w-[230px]',
                 pos
               )}
               style={{ y: shift }}
               transition={{ type: 'spring', stiffness: 120, damping: 18 }}
             >
-              <div className="flex items-center gap-2 text-xs font-semibold tracking-[0.14em] text-slate-300 uppercase">
-                <Icon className="h-4 w-4 text-sky-400" />
+              <div className="flex items-center gap-2 text-xs font-semibold tracking-[0.14em] text-white/70 uppercase">
+                <Icon className="text-hm-accent h-4 w-4" />
                 {title}
               </div>
-              <p className="text-sm text-slate-200">{copy}</p>
+              <p className="text-sm text-white/85">{copy}</p>
             </MotionDiv>
           ))}
         </div>
@@ -168,7 +168,7 @@ export function MarketingPreviewCard({ className }: MarketingPreviewCardProps) {
       <div className="space-y-4 p-6 pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <p className="text-xs font-semibold tracking-[0.16em] text-slate-400 uppercase">
+            <p className="text-xs font-semibold tracking-[0.16em] text-white/60 uppercase">
               Example Listing
             </p>
             <span className="rounded-full border border-amber-400/40 bg-amber-400/10 px-2 py-0.5 text-[10px] font-semibold tracking-[0.14em] text-amber-300 uppercase">
@@ -181,17 +181,17 @@ export function MarketingPreviewCard({ className }: MarketingPreviewCardProps) {
         </div>
 
         {/* Property tags */}
-        <div className="flex flex-wrap gap-3 text-sm font-medium text-slate-200">
+        <div className="flex flex-wrap gap-3 text-sm font-medium text-white/85">
           <div className="flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3 py-2">
-            <Bed className="h-4 w-4 text-slate-400" />
+            <Bed className="h-4 w-4 text-white/60" />
             <span>3 beds</span>
           </div>
           <div className="flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3 py-2">
-            <Bath className="h-4 w-4 text-slate-400" />
+            <Bath className="h-4 w-4 text-white/60" />
             <span>2 baths</span>
           </div>
           <div className="flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3 py-2">
-            <MapPin className="h-4 w-4 text-slate-400" />
+            <MapPin className="h-4 w-4 text-white/60" />
             <span>Near parks</span>
           </div>
         </div>

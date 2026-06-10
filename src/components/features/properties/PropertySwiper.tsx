@@ -173,7 +173,7 @@ export function PropertySwiper({
             showHints={showSwipeHints && currentIndex === 0}
             className={
               currentIsMutuallyLiked
-                ? 'transform-gpu shadow-2xl ring-2 shadow-pink-500/25 ring-pink-400/20 ring-offset-2 ring-offset-transparent'
+                ? 'shadow-couples-primary/25 ring-couples-primary/20 transform-gpu shadow-2xl ring-2 ring-offset-2 ring-offset-transparent'
                 : ''
             }
           />
@@ -183,10 +183,10 @@ export function PropertySwiper({
       {/* Helper text for mutually liked properties */}
       {currentIsMutuallyLiked && (
         <div className="absolute -bottom-32 left-1/2 z-10 -translate-x-1/2">
-          <div className="flex animate-pulse items-center gap-2 rounded-full border border-pink-400/30 bg-gradient-to-r from-pink-500/20 to-purple-500/20 px-4 py-2 text-sm text-pink-300 backdrop-blur-sm">
-            <Heart className="h-4 w-4 animate-bounce fill-pink-400 text-pink-400" />
+          <div className="border-couples-primary/30 from-couples-primary/20 to-couples-secondary/20 text-couples-primary flex animate-pulse items-center gap-2 rounded-full border bg-gradient-to-r px-4 py-2 text-sm backdrop-blur-sm">
+            <Heart className="fill-couples-primary text-couples-primary h-4 w-4 animate-bounce" />
             <span>A household member liked this too!</span>
-            <Users className="h-4 w-4 animate-pulse text-purple-400" />
+            <Users className="text-couples-secondary h-4 w-4 animate-pulse" />
           </div>
         </div>
       )}

@@ -257,7 +257,7 @@ export default clerkMiddleware(async (clerkAuth, request) => {
     // Signed-in: redirect away from /login + /signup, otherwise pass through.
     let response = NextResponse.next({ request: nextRequest })
 
-    if (pathname === '/login' || pathname === '/signup') {
+    if (pathname === '/' || pathname === '/login' || pathname === '/signup') {
       const params = nextRequest.nextUrl.searchParams
       const redirectTo =
         getSafeRedirectPath(params.get('redirectTo')) ||

@@ -1,5 +1,8 @@
+import { randomUUID } from 'node:crypto'
 import { NextResponse } from 'next/server'
-import { createVibesService } from '@/lib/services/vibes'
+import { createVibesService, VibesService } from '@/lib/services/vibes'
+import { createStandaloneClient } from '@/lib/supabase/standalone'
+import { fetchZillowImageUrls } from '@/lib/ingestion/zillow-images'
 import { PROPERTY_TYPE_VALUES, type Property } from '@/lib/schemas/property'
 import { rateLimitAdminRoute } from '@/lib/api/admin-rate-limit'
 import { ApiErrorHandler } from '@/lib/api/errors'
@@ -8,6 +11,10 @@ import {
   isPaidRapidApiApproved,
   RAPIDAPI_PAID_APPROVAL_REQUIRED_MESSAGE,
 } from '@/lib/api/rapidapi-approval-gate'
+import {
+  extractAmenities,
+  type ZillowPropertyResponse,
+} from './extract-amenities'
 
 const isDev = process.env.NODE_ENV === 'development'
 const ZILLOW_FETCH_TIMEOUT_MS = 10_000
@@ -24,214 +31,6 @@ const normalizePropertyType = (
     .toLowerCase()
     .replace(/\s+/g, '_')
   return isPropertyType(normalized) ? normalized : 'single_family'
-}
-
-interface ZillowPropertyResponse {
-  zpid?: number | string
-  address?: {
-    streetAddress?: string
-    city?: string
-    state?: string
-    zipcode?: string
-  }
-  streetAddress?: string
-  city?: string
-  state?: string
-  zipcode?: string
-  price?: number
-  bedrooms?: number
-  bathrooms?: number
-  livingArea?: number
-  lotAreaValue?: number
-  yearBuilt?: number
-  homeType?: string
-  propertyType?: string
-  imgSrc?: string
-  // Simple flat array of URLs (most common)
-  images?: string[]
-  // Complex nested structure with multiple sizes
-  originalPhotos?: Array<{
-    mixedSources?: {
-      jpeg?: Array<{ url?: string; width?: number }>
-      webp?: Array<{ url?: string; width?: number }>
-    }
-  }>
-  // Object array with url field
-  photos?: Array<{ url?: string }>
-  // Alternative media array format
-  media?: Array<{ url?: string; type?: string }>
-  description?: string
-  latitude?: number
-  longitude?: number
-  // INGEST-001: Zillow's response also includes structured amenity fields.
-  // The previous code hardcoded `amenities: null` on the LLM input which is
-  // a major contributor to the systematic hallucination findings in Section
-  // 1 of the audit. Capturing the common ones so extractAmenities() can map
-  // them into a single string[].
-  appliances?: string[]
-  interiorFeatures?: string[]
-  exteriorFeatures?: string[]
-  parkingFeatures?: string[]
-  coolingFeatures?: string[]
-  heatingFeatures?: string[]
-  flooring?: string[] | string
-  view?: string[] | string
-  homeFacts?: Array<{ factLabel?: string; factValue?: string }>
-  atAGlanceFacts?: Array<{ factLabel?: string; factValue?: string }>
-  hasGarage?: boolean
-  hasPool?: boolean
-  hasFireplace?: boolean
-  // INGEST-001 v2: live RapidAPI responses nest the amenity fields under
-  // resoFacts (RESO MLS standard fields). Top-level fields are kept for
-  // backward compatibility with the simpler shape some properties
-  // returned, but resoFacts is where the actual data is for the modern
-  // listings (verified against the prod 10-row sample on 2026-05-13 —
-  // every property had top-level nulls and rich resoFacts entries).
-  resoFacts?: {
-    appliances?: string[]
-    interiorFeatures?: string[]
-    exteriorFeatures?: string[]
-    parkingFeatures?: string[]
-    cooling?: string[]
-    coolingFeatures?: string[]
-    heating?: string[]
-    heatingFeatures?: string[]
-    flooring?: string[] | string
-    view?: string[] | string
-    fireplaceFeatures?: string[]
-    poolFeatures?: string[]
-    spaFeatures?: string[]
-    laundryFeatures?: string[]
-    patioAndPorchFeatures?: string[]
-    lotFeatures?: string[]
-    communityFeatures?: string[]
-    associationAmenities?: string[]
-    accessibilityFeatures?: string[]
-    waterSource?: string[] | string
-    sewer?: string[] | string
-    roofType?: string[] | string
-    foundationDetails?: string[] | string
-    architecturalStyle?: string[] | string
-    hasGarage?: boolean
-    hasPool?: boolean
-    hasFireplace?: boolean
-    homeFacts?: Array<{ factLabel?: string; factValue?: string }>
-    atAGlanceFacts?: Array<{ factLabel?: string; factValue?: string }>
-  }
-  [key: string]: unknown
-}
-
-/**
- * INGEST-001: pull a string[] of amenity-like signals out of a Zillow
- * property payload. The shape varies by listing — some fields are arrays,
- * some are scalars, and homeFacts is a label/value pair list — so we
- * normalize everything into a deduped, trimmed string[].
- *
- * Returns null when nothing was extracted, matching the schema's null
- * sentinel and preventing downstream code from interpreting an empty
- * array as "no amenities" vs "data unavailable".
- */
-export function extractAmenities(z: ZillowPropertyResponse): string[] | null {
-  const items: string[] = []
-  const reso = z.resoFacts
-
-  const pushArr = (v: unknown) => {
-    if (Array.isArray(v)) {
-      for (const entry of v) {
-        if (typeof entry === 'string' && entry.trim()) items.push(entry.trim())
-      }
-    } else if (typeof v === 'string' && v.trim()) {
-      items.push(v.trim())
-    }
-  }
-
-  // Walk both the top level (legacy/simpler responses) and the resoFacts
-  // sub-object (RESO standard fields, where modern Zillow responses
-  // actually carry the data). The 10-row prod validation on 2026-05-13
-  // surfaced every amenity field at resoFacts.* with all top-level
-  // counterparts NULL.
-  pushArr(z.appliances)
-  pushArr(reso?.appliances)
-  pushArr(z.interiorFeatures)
-  pushArr(reso?.interiorFeatures)
-  pushArr(z.exteriorFeatures)
-  pushArr(reso?.exteriorFeatures)
-  pushArr(z.parkingFeatures)
-  pushArr(reso?.parkingFeatures)
-  pushArr(z.coolingFeatures)
-  pushArr(reso?.coolingFeatures)
-  pushArr(reso?.cooling)
-  pushArr(z.heatingFeatures)
-  pushArr(reso?.heatingFeatures)
-  pushArr(reso?.heating)
-  pushArr(z.flooring)
-  pushArr(reso?.flooring)
-  pushArr(z.view)
-  pushArr(reso?.view)
-  pushArr(reso?.fireplaceFeatures)
-  pushArr(reso?.poolFeatures)
-  pushArr(reso?.spaFeatures)
-  pushArr(reso?.laundryFeatures)
-  pushArr(reso?.patioAndPorchFeatures)
-  pushArr(reso?.lotFeatures)
-  pushArr(reso?.communityFeatures)
-  pushArr(reso?.associationAmenities)
-  pushArr(reso?.accessibilityFeatures)
-  pushArr(reso?.waterSource)
-  pushArr(reso?.sewer)
-  pushArr(reso?.roofType)
-  pushArr(reso?.foundationDetails)
-  pushArr(reso?.architecturalStyle)
-
-  if (z.hasGarage || reso?.hasGarage) items.push('Garage')
-  if (z.hasPool || reso?.hasPool) items.push('Pool')
-  if (z.hasFireplace || reso?.hasFireplace) items.push('Fireplace')
-
-  // Codex P2 (PR #38): `z.homeFacts || z.atAGlanceFacts` was buggy because
-  // an empty array is truthy in JavaScript. Listings with
-  // `homeFacts: []` and a populated `atAGlanceFacts` would skip the fallback
-  // and lose the amenity facts entirely. Pick whichever array actually has
-  // entries — checking both top-level and resoFacts since modern responses
-  // nest these too.
-  const factsCandidates = [
-    Array.isArray(z.homeFacts) && z.homeFacts.length > 0 ? z.homeFacts : null,
-    Array.isArray(z.atAGlanceFacts) && z.atAGlanceFacts.length > 0
-      ? z.atAGlanceFacts
-      : null,
-    Array.isArray(reso?.homeFacts) && reso.homeFacts.length > 0
-      ? reso.homeFacts
-      : null,
-    Array.isArray(reso?.atAGlanceFacts) && reso.atAGlanceFacts.length > 0
-      ? reso.atAGlanceFacts
-      : null,
-  ]
-  const facts = factsCandidates.find((f): f is NonNullable<typeof f> => !!f)
-  if (Array.isArray(facts)) {
-    for (const fact of facts) {
-      if (
-        fact &&
-        typeof fact.factLabel === 'string' &&
-        typeof fact.factValue === 'string' &&
-        fact.factValue.trim()
-      ) {
-        items.push(`${fact.factLabel.trim()}: ${fact.factValue.trim()}`)
-      }
-    }
-  }
-
-  if (!items.length) return null
-
-  // Dedupe case-insensitively but keep the first-encountered casing.
-  const seen = new Set<string>()
-  const unique: string[] = []
-  for (const item of items) {
-    const key = item.toLowerCase()
-    if (!seen.has(key)) {
-      seen.add(key)
-      unique.push(item)
-    }
-  }
-  return unique
 }
 
 /**
@@ -285,54 +84,6 @@ async function fetchZillowProperty(
   }
 
   return response.json()
-}
-
-/**
- * Fetch images from Zillow /images endpoint (separate from /property)
- * Returns flat array of image URLs
- */
-async function fetchZillowImages(
-  zpid: string,
-  rapidApiKey: string,
-  host: string
-): Promise<string[]> {
-  const url = `https://${host}/images?zpid=${zpid}`
-
-  try {
-    const response = await fetchWithTimeout(url, {
-      headers: {
-        'X-RapidAPI-Key': rapidApiKey,
-        'X-RapidAPI-Host': host,
-      },
-      timeoutMs: ZILLOW_FETCH_TIMEOUT_MS,
-      timeoutMessage: 'Zillow image fetch timed out',
-    })
-
-    if (!response.ok) {
-      console.warn(
-        `[fetchZillowImages] Failed to fetch images: ${response.status}`
-      )
-      return []
-    }
-
-    const isRecord = (value: unknown): value is Record<string, unknown> =>
-      typeof value === 'object' && value !== null
-    const isStringArray = (value: unknown): value is string[] =>
-      Array.isArray(value) && value.every((item) => typeof item === 'string')
-
-    const data: unknown = await response.json()
-    const images =
-      isRecord(data) && isStringArray(data.images) ? data.images : []
-    if (isDev) {
-      console.log(
-        `[fetchZillowImages] Got ${images.length} images from /images endpoint`
-      )
-    }
-    return images
-  } catch (error) {
-    console.warn('[fetchZillowImages] Error fetching images:', error)
-    return []
-  }
 }
 
 /**
@@ -503,6 +254,8 @@ export async function POST(req: Request): Promise<NextResponse> {
   // reject other types with a 400 — extractZpid() must never receive a
   // non-string (it calls .trim()).
   let zillowInput: string
+  let modelOverride: string | undefined
+  let imageCapOverride: number | undefined
   try {
     const body = await req.json()
     const raw: unknown = body.zillowUrl || body.zpid
@@ -516,10 +269,40 @@ export async function POST(req: Request): Promise<NextResponse> {
     } else {
       throw new Error('zillowUrl or zpid must be a string or number')
     }
-  } catch {
-    return ApiErrorHandler.badRequest(
-      'Invalid request body. Provide zillowUrl or zpid.'
-    )
+
+    // Optional per-call model + imageCap overrides for the bake-off
+    // backfill. When omitted, the VibesService defaults apply (current
+    // production behavior: gemini-2.5-flash, cap=18).
+    if (body.model !== undefined) {
+      if (typeof body.model !== 'string' || body.model.trim().length === 0) {
+        throw new Error('model must be a non-empty string')
+      }
+      modelOverride = body.model.trim()
+    }
+    if (body.imageCap !== undefined) {
+      const capRaw = body.imageCap
+      const cap =
+        typeof capRaw === 'number'
+          ? capRaw
+          : typeof capRaw === 'string'
+            ? Number(capRaw)
+            : NaN
+      if (
+        !Number.isFinite(cap) ||
+        !Number.isInteger(cap) ||
+        cap < 1 ||
+        cap > 60
+      ) {
+        throw new Error('imageCap must be an integer between 1 and 60')
+      }
+      imageCapOverride = cap
+    }
+  } catch (parseErr) {
+    const message =
+      parseErr instanceof Error
+        ? parseErr.message
+        : 'Invalid request body. Provide zillowUrl or zpid.'
+    return ApiErrorHandler.badRequest(message)
   }
 
   // Extract zpid
@@ -534,13 +317,29 @@ export async function POST(req: Request): Promise<NextResponse> {
     process.env.RAPIDAPI_HOST || 'us-housing-market-data1.p.rapidapi.com'
 
   try {
-    // Fetch property details and images in parallel
+    // Fetch property details and images in parallel.
+    // Images go through the recovered uncapped fetcher (maxImages 80, 3
+    // retries, 429 exponential backoff, dedup, 404 → []) instead of the
+    // old thin slice(0,20)/no-retry helper — so re-ingests pull the full
+    // gallery and the downstream image-selector still picks the best
+    // imageCap for the LLM.
     if (isDev) {
       console.log(`[generate-vibes-zillow] Fetching property ${zpid}...`)
     }
     const [zillowData, imagesFromEndpoint] = await Promise.all([
       fetchZillowProperty(zpid, rapidApiKey, rapidApiHost),
-      fetchZillowImages(zpid, rapidApiKey, rapidApiHost),
+      fetchZillowImageUrls({
+        zpid,
+        rapidApiKey,
+        host: rapidApiHost,
+        maxImages: 80,
+      }).catch((err): string[] => {
+        console.warn(
+          '[generate-vibes-zillow] image fetch failed:',
+          err instanceof Error ? err.message : String(err)
+        )
+        return []
+      }),
     ])
 
     // Extract address parts
@@ -552,34 +351,83 @@ export async function POST(req: Request): Promise<NextResponse> {
     const state = zillowData.address?.state || zillowData.state || 'CA'
     const zipCode = zillowData.address?.zipcode || zillowData.zipcode || '00000'
 
-    // Extract images from both sources and merge
-    // Priority: /images endpoint (most complete), then /property response fields
-    let images: string[]
+    // Extract images from both sources.
+    // Priority: dedicated /images endpoint (uncapped, most complete), then
+    // /property response fields. This is the FRESH fetch — it may legitimately
+    // come back sparse or empty (rate-limited, delisted), which the
+    // anti-clobber guard below accounts for before any DB write.
+    let freshImages: string[]
     if (imagesFromEndpoint.length > 0) {
-      // Use images from dedicated /images endpoint
-      images = imagesFromEndpoint.slice(0, 20)
+      // Use images from dedicated /images endpoint (already deduped + capped
+      // at 80 by fetchZillowImageUrls). No further slice here so the LLM
+      // image-selector sees the full gallery.
+      freshImages = imagesFromEndpoint
       if (isDev) {
         console.log(
-          `[generate-vibes-zillow] Using ${images.length} images from /images endpoint`
+          `[generate-vibes-zillow] Fetched ${freshImages.length} images from /images endpoint`
         )
       }
     } else {
       // Fall back to images from /property response
-      images = extractImages(zillowData)
+      freshImages = extractImages(zillowData)
       if (isDev) {
         console.log(
-          `[generate-vibes-zillow] Using ${images.length} images from /property response`
+          `[generate-vibes-zillow] Fetched ${freshImages.length} images from /property response`
         )
       }
     }
 
+    // PERSISTENCE FIX (2026-05-20): the previous version of this route built
+    // the Property object in memory with a synthetic id (`zillow-${zpid}`),
+    // generated the vibe, and returned without writing either the refreshed
+    // property fields or the new vibe to the DB. Net effect: every call
+    // burned RapidAPI + OpenRouter for an ephemeral response — `description`,
+    // `amenities`, `year_built` never landed in prod `properties`, and
+    // `property_vibes` rows kept the stale generations from the original
+    // 2026-01 bulk run. Now we look up the existing UUID by zpid (or mint a
+    // new one for first-time zpids), use that real UUID throughout, upsert
+    // the property row with the freshly-fetched Zillow fields, and after
+    // vibes generation upsert into property_vibes too.
+    const supabase = createStandaloneClient()
+    const { data: existingProperty, error: lookupError } = await supabase
+      .from('properties')
+      .select('id, images')
+      .eq('zpid', zpid)
+      .maybeSingle()
+    if (lookupError) {
+      console.error(
+        '[generate-vibes-zillow] zpid lookup failed:',
+        lookupError.message
+      )
+    }
+    const propertyId = existingProperty?.id ?? randomUUID()
+
+    // ANTI-CLOBBER (2026-05-20): a prior patch overwrote rich stored
+    // galleries with sparse re-fetches (a 429 or delisted listing returns
+    // few/no images). Only adopt the fresh fetch when it is at least as rich
+    // as what's already stored; otherwise keep the existing gallery. Net:
+    // a richer re-fetch DOES update the DB, a poorer one NEVER does. The
+    // downstream image-selector still picks the best imageCap for the LLM.
+    const existingImages = Array.isArray(existingProperty?.images)
+      ? existingProperty.images.filter(
+          (u): u is string => typeof u === 'string'
+        )
+      : []
+    const images =
+      freshImages.length >= existingImages.length ? freshImages : existingImages
+
     if (images.length === 0) {
       return ApiErrorHandler.badRequest('No images found for this property')
+    }
+    if (isDev) {
+      console.log(
+        `[generate-vibes-zillow] Images: fresh=${freshImages.length} existing=${existingImages.length} → using ${images.length}`
+      )
     }
 
     // Build property object for vibes generation
     const property: Property = {
-      id: `zillow-${zpid}`,
+      id: propertyId,
       zpid,
       address,
       city,
@@ -591,6 +439,16 @@ export async function POST(req: Request): Promise<NextResponse> {
       square_feet: zillowData.livingArea || null,
       lot_size_sqft: zillowData.lotAreaValue || null,
       year_built: zillowData.yearBuilt || null,
+      // PARKING-NULL: Zillow's response shape in ZillowPropertyResponse
+      // (see extract-amenities.ts) exposes parking signals only as
+      // booleans (`hasGarage`) and feature strings (`parkingFeatures`,
+      // `resoFacts.parkingFeatures`). The 2026-05-13 prod sample
+      // confirmed no numeric count field (no garageParkingCapacity, no
+      // parkingCapacity, no garageSpaces) on any returned listing.
+      // Leaving null here is intentional — we don't fabricate a count
+      // from boolean evidence. The garage / parking-feature strings
+      // already flow into `amenities` via extractAmenities(), which the
+      // LLM uses for non-numeric reasoning.
       parking_spots: null,
       property_type: normalizePropertyType(
         zillowData.homeType || zillowData.propertyType || 'single_family'
@@ -616,6 +474,25 @@ export async function POST(req: Request): Promise<NextResponse> {
       updated_at: new Date().toISOString(),
     }
 
+    // Upsert the refreshed property row so description / amenities /
+    // year_built actually persist. Strip only created_at so an update doesn't
+    // clobber the original creation time (the column has DEFAULT now() for the
+    // insert case). Keep updated_at in the payload and set it to now — this
+    // table has no BEFORE UPDATE trigger, so without an explicit value the
+    // refresh timestamp would go stale.
+    const { created_at: _propCreatedAt, ...propertyUpsertPayload } = property
+    void _propCreatedAt
+    propertyUpsertPayload.updated_at = new Date().toISOString()
+    const { error: propertyUpsertError } = await supabase
+      .from('properties')
+      .upsert(propertyUpsertPayload, { onConflict: 'id' })
+    if (propertyUpsertError) {
+      console.error(
+        '[generate-vibes-zillow] property upsert failed:',
+        propertyUpsertError.message
+      )
+    }
+
     if (isDev) {
       console.log(
         `[generate-vibes-zillow] Generating vibes for ${address}, ${city}...`
@@ -623,13 +500,40 @@ export async function POST(req: Request): Promise<NextResponse> {
       console.log(`[generate-vibes-zillow] Using ${images.length} images`)
     }
 
-    // Generate vibes
+    // Generate vibes. model + imageCap overrides are threaded through to
+    // VibesService.generateVibes (bake-off path); when undefined the
+    // service falls back to the production defaults.
     const vibesService = createVibesService()
-    const result = await vibesService.generateVibes(property)
+    const result = await vibesService.generateVibes(property, {
+      model: modelOverride,
+      imageCap: imageCapOverride,
+    })
 
     if (isDev) {
       console.log(
         `[generate-vibes-zillow] Generated vibes in ${result.processingTimeMs}ms, cost: $${result.usage.estimatedCostUsd.toFixed(4)}`
+      )
+    }
+
+    // Persist the generated vibe so the user-facing app picks up the fresh
+    // output. Upsert on property_id so a re-run replaces the existing row
+    // (mirrors the bulk /api/admin/generate-vibes route's pattern at
+    // src/app/api/admin/generate-vibes/route.ts lines 266-272).
+    const vibeRecord = VibesService.toInsertRecord(
+      result,
+      property,
+      result.rawOutput
+    )
+    const { error: vibeUpsertError } = await supabase
+      .from('property_vibes')
+      .upsert([vibeRecord], {
+        onConflict: 'property_id',
+        ignoreDuplicates: false,
+      })
+    if (vibeUpsertError) {
+      console.error(
+        '[generate-vibes-zillow] property_vibes upsert failed:',
+        vibeUpsertError.message
       )
     }
 

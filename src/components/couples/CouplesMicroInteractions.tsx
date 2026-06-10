@@ -49,7 +49,7 @@ export function FloatingHearts({
             ease: 'easeOut',
           }}
         >
-          <Heart className="h-6 w-6 fill-pink-400 text-pink-400" />
+          <Heart className="fill-couples-primary text-couples-primary h-6 w-6" />
         </MotionDiv>
       ))}
     </div>
@@ -115,7 +115,7 @@ export function HeartbeatHeart({ active = true }: { active?: boolean }) {
         ease: 'easeInOut',
       }}
     >
-      <Heart className="h-5 w-5 fill-pink-400 text-pink-400" />
+      <Heart className="fill-couples-primary text-couples-primary h-5 w-5" />
     </MotionDiv>
   )
 }
@@ -206,10 +206,10 @@ export function SuccessConfetti({ trigger }: { trigger: boolean }) {
         const icons = [Heart, Star, Sparkles]
         const Icon = icons[Math.floor(Math.random() * icons.length)]
         const colors = [
-          'text-pink-400',
-          'text-purple-400',
+          'text-couples-primary',
+          'text-couples-secondary',
           'text-yellow-400',
-          'text-rose-400',
+          'text-couples-accent',
         ]
         const color = colors[Math.floor(Math.random() * colors.length)]
 
@@ -302,7 +302,7 @@ export function LoadingDots({ size = 'sm' }: { size?: 'sm' | 'md' | 'lg' }) {
       {[0, 1, 2].map((i) => (
         <MotionDiv
           key={i}
-          className={`${sizes[size]} rounded-full bg-pink-400`}
+          className={`${sizes[size]} bg-couples-primary rounded-full`}
           animate={{
             scale: [1, 1.2, 1],
             opacity: [1, 0.5, 1],

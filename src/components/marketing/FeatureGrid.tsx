@@ -88,7 +88,7 @@ function SpotlightCard({
           background: useTransform(
             [mouseX, mouseY],
             ([x, y]) =>
-              `radial-gradient(400px circle at ${x}px ${y}px, rgba(56,189,248,0.1), transparent 40%)`
+              `radial-gradient(400px circle at ${x}px ${y}px, rgba(183,121,31,0.1), transparent 40%)`
           ),
         }}
       />
@@ -117,9 +117,9 @@ function AnimatedIcon({
           animate: {
             scale: [1, 1.15, 1],
             filter: [
-              'drop-shadow(0 0 0px rgba(56,189,248,0))',
-              'drop-shadow(0 0 8px rgba(56,189,248,0.6))',
-              'drop-shadow(0 0 0px rgba(56,189,248,0))',
+              'drop-shadow(0 0 0px rgba(183,121,31,0))',
+              'drop-shadow(0 0 8px rgba(183,121,31,0.6))',
+              'drop-shadow(0 0 0px rgba(183,121,31,0))',
             ],
           },
           transition: { duration: 1, repeat: Infinity },
@@ -162,7 +162,7 @@ export function FeatureGrid() {
         aria-hidden
         style={{
           background:
-            'radial-gradient(1200px 600px at 50% -10%, rgba(2,26,68,0.06) 0%, rgba(2,26,68,0.03) 35%, rgba(255,255,255,1) 65%)',
+            'radial-gradient(1200px 600px at 50% -10%, rgba(31,26,23,0.06) 0%, rgba(31,26,23,0.03) 35%, rgba(255,255,255,1) 65%)',
         }}
       />
       <div
@@ -170,7 +170,7 @@ export function FeatureGrid() {
         aria-hidden
         style={{
           backgroundImage:
-            'repeating-linear-gradient(0deg, rgba(2,26,68,0.08) 0px, rgba(2,26,68,0.08) 1px, transparent 1px, transparent 28px), repeating-linear-gradient(90deg, rgba(2,26,68,0.08) 0px, rgba(2,26,68,0.08) 1px, transparent 1px, transparent 28px)',
+            'repeating-linear-gradient(0deg, rgba(31,26,23,0.08) 0px, rgba(31,26,23,0.08) 1px, transparent 1px, transparent 28px), repeating-linear-gradient(90deg, rgba(31,26,23,0.08) 0px, rgba(31,26,23,0.08) 1px, transparent 1px, transparent 28px)',
           backgroundSize: '28px 28px',
         }}
       />
@@ -179,7 +179,7 @@ export function FeatureGrid() {
         aria-hidden
         style={{
           backgroundImage:
-            'radial-gradient(600px 300px at 80% 0%, rgba(41,227,255,0.12) 0%, rgba(41,227,255,0) 60%), radial-gradient(700px 320px at 15% 0%, rgba(6,58,158,0.10) 0%, rgba(6,58,158,0) 60%)',
+            'radial-gradient(600px 300px at 80% 0%, rgba(183,121,31,0.12) 0%, rgba(183,121,31,0) 60%), radial-gradient(700px 320px at 15% 0%, rgba(111,72,18,0.10) 0%, rgba(111,72,18,0) 60%)',
         }}
       />
 
@@ -192,7 +192,7 @@ export function FeatureGrid() {
           viewport={{ once: true }}
         >
           <h2
-            className="text-hm-stone-900 text-3xl font-semibold tracking-[-0.035em] sm:text-4xl md:text-5xl lg:text-6xl"
+            className="text-hm-ink text-3xl font-semibold tracking-[-0.035em] sm:text-4xl md:text-5xl lg:text-6xl"
             style={{ fontFamily: 'var(--font-heading)' }}
           >
             House hunting, but make it{'\u00a0'}
@@ -208,7 +208,7 @@ export function FeatureGrid() {
             </span>
           </h2>
           <p
-            className="text-hm-stone-600 mt-4 text-lg sm:text-xl md:text-2xl"
+            className="text-hm-muted mt-4 text-lg sm:text-xl md:text-2xl"
             style={{ fontFamily: 'var(--font-body)' }}
           >
             Turn scattered listing opinions into a shared shortlist everyone can
@@ -267,7 +267,7 @@ function FeatureCard({ feature }: { feature: (typeof features)[0] }) {
     >
       <SpotlightCard className="h-full">
         <Card
-          className="group relative h-full overflow-hidden border-gray-200 bg-white p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl sm:p-6"
+          className="group border-hm-border bg-hm-surface relative h-full overflow-hidden p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl sm:p-6"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
@@ -279,7 +279,7 @@ function FeatureCard({ feature }: { feature: (typeof features)[0] }) {
             transition={{ duration: 0.3 }}
             style={{
               background:
-                'linear-gradient(135deg, rgba(56,189,248,0.3) 0%, rgba(14,165,233,0.1) 50%, rgba(56,189,248,0.3) 100%)',
+                'linear-gradient(135deg, rgba(183,121,31,0.3) 0%, rgba(147,95,22,0.1) 50%, rgba(183,121,31,0.3) 100%)',
               mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
               maskComposite: 'exclude',
               padding: '2px',
@@ -308,14 +308,14 @@ function FeatureCard({ feature }: { feature: (typeof features)[0] }) {
             </m.div>
 
             <h3
-              className="mb-2 text-lg font-semibold text-gray-900 sm:text-xl"
+              className="text-hm-ink mb-2 text-lg font-semibold sm:text-xl"
               style={{ fontFamily: 'var(--font-heading)' }}
             >
               {feature.title}
             </h3>
 
             <p
-              className="text-sm text-gray-700 sm:text-base"
+              className="text-hm-ink-soft text-sm sm:text-base"
               style={{ fontFamily: 'var(--font-body)' }}
             >
               {feature.description}

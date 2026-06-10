@@ -179,7 +179,7 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
   }
 
   const inputStyles =
-    'w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-hm-stone-200 placeholder:text-hm-stone-500 transition-all focus:border-amber-500/50 focus:bg-white/[0.07] focus:outline-none focus:ring-2 focus:ring-amber-500/20'
+    'w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-hm-ink placeholder:text-hm-muted transition-all focus:border-amber-500/50 focus:bg-white/[0.07] focus:outline-none focus:ring-2 focus:ring-amber-500/20'
 
   return (
     <Form {...form}>
@@ -205,10 +205,10 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
             size="lg"
           />
           <div className="flex-1">
-            <p className="text-hm-stone-400 text-xs font-medium tracking-wide uppercase">
+            <p className="text-hm-muted text-xs font-medium tracking-wide uppercase">
               Profile Picture
             </p>
-            <p className="text-hm-stone-500 mt-1 text-xs">
+            <p className="text-hm-muted mt-1 text-xs">
               Choose an avatar or use your initials
             </p>
           </div>
@@ -217,7 +217,7 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
             variant="outline"
             size="sm"
             onClick={() => setIsAvatarPickerOpen(true)}
-            className="text-hm-stone-300 border-white/10 bg-transparent hover:border-white/20 hover:bg-white/5 hover:text-white"
+            className="text-hm-ink-soft border-white/10 bg-transparent hover:border-white/20 hover:bg-white/5 hover:text-white"
           >
             <Camera className="mr-2 h-4 w-4" />
             Change
@@ -238,7 +238,7 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
             name="display_name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-hm-stone-400 flex items-center gap-2 text-xs font-medium tracking-wide uppercase">
+                <FormLabel className="text-hm-muted flex items-center gap-2 text-xs font-medium tracking-wide uppercase">
                   <UserIcon className="h-3.5 w-3.5" />
                   Display Name
                 </FormLabel>
@@ -259,7 +259,7 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
             name="phone"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-hm-stone-400 flex items-center gap-2 text-xs font-medium tracking-wide uppercase">
+                <FormLabel className="text-hm-muted flex items-center gap-2 text-xs font-medium tracking-wide uppercase">
                   <Phone className="h-3.5 w-3.5" />
                   Phone Number
                 </FormLabel>
@@ -283,13 +283,13 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
 
         <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
           <div className="flex items-center gap-2">
-            <Mail className="text-hm-stone-500 h-3.5 w-3.5" />
-            <p className="text-hm-stone-400 text-xs font-medium tracking-wide uppercase">
+            <Mail className="text-hm-muted h-3.5 w-3.5" />
+            <p className="text-hm-muted text-xs font-medium tracking-wide uppercase">
               Email Address
             </p>
           </div>
-          <p className="text-hm-stone-200 mt-2 text-sm">{user.email}</p>
-          <p className="text-hm-stone-500 mt-1 text-xs">
+          <p className="text-hm-ink mt-2 text-sm">{user.email}</p>
+          <p className="text-hm-muted mt-1 text-xs">
             Email is managed by your authentication provider
           </p>
         </div>
@@ -299,7 +299,7 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
           name="bio"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-hm-stone-400 flex items-center gap-2 text-xs font-medium tracking-wide uppercase">
+              <FormLabel className="text-hm-muted flex items-center gap-2 text-xs font-medium tracking-wide uppercase">
                 <FileText className="h-3.5 w-3.5" />
                 Bio
               </FormLabel>
@@ -313,7 +313,7 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
               </FormControl>
               <div className="flex items-center justify-between">
                 <FormMessage className="text-xs text-red-400" />
-                <p className="text-hm-stone-500 text-xs">
+                <p className="text-hm-muted text-xs">
                   {field.value?.length || 0}/500
                 </p>
               </div>
@@ -326,7 +326,7 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
             type="button"
             variant="outline"
             onClick={() => form.reset()}
-            className="text-hm-stone-400 hover:text-hm-stone-200 border-white/10 bg-transparent hover:border-white/20 hover:bg-white/5"
+            className="text-hm-muted hover:text-hm-ink border-white/10 bg-transparent hover:border-white/20 hover:bg-white/5"
           >
             Reset
           </Button>

@@ -62,6 +62,22 @@
   --hm-success-muted: #24945f;
   --hm-error: #b42318;
   --hm-error-muted: #d92d20;
+
+  /* Semantic warm aliases — canonical Tailwind color tokens for editorial UI */
+  --color-hm-canvas: #fbf7ef;
+  --color-hm-surface: #fffaf2;
+  --color-hm-surface-raised: #ffffff;
+  --color-hm-ink: #1f1a17;
+  --color-hm-ink-soft: #342b25;
+  --color-hm-muted: #4a4039;
+  --color-hm-faint: #5f554d;
+  --color-hm-border: #e4d8c4;
+  --color-hm-border-strong: #d3c3a8;
+  --color-hm-accent: #b7791f;
+  --color-hm-accent-strong: #935f16;
+  --color-hm-link: #8a5a14;
+  --color-hm-link-hover: #6f4812;
+  --color-hm-focus: #b7791f;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -96,26 +112,26 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
-  /* Dashboard Design Token Colors */
-  --color-token-primary-50: #f0f9ff;
-  --color-token-primary-100: #e0f2fe;
-  --color-token-primary-200: #bae6fd;
-  --color-token-primary-300: #7dd3fc;
-  --color-token-primary-400: #38bdf8;
-  --color-token-primary-500: #0ea5e9;
-  --color-token-primary-600: #0284c7;
-  --color-token-primary-700: #0369a1;
-  --color-token-primary-800: #075985;
-  --color-token-primary-900: #0c4a6e;
+  /* Dashboard Design Token Colors — warm burnished-amber primary (was sky blue) */
+  --color-token-primary-50: #faf5ea;
+  --color-token-primary-100: #f1e4c8;
+  --color-token-primary-200: #e3c896;
+  --color-token-primary-300: #cfa75f;
+  --color-token-primary-400: #b7791f;
+  --color-token-primary-500: #9a6514;
+  --color-token-primary-600: #7c5010;
+  --color-token-primary-700: #5f3d0d;
+  --color-token-primary-800: #48300c;
+  --color-token-primary-900: #37250a;
 
-  /* Secondary Colors */
-  --color-token-secondary-100: #f1f5f9;
-  --color-token-secondary-200: #e2e8f0;
-  --color-token-secondary-300: #cbd5e1;
-  --color-token-secondary-500: #64748b;
-  --color-token-secondary-600: #475569;
-  --color-token-secondary-700: #334155;
-  --color-token-secondary-800: #1e293b;
+  /* Secondary Colors — warm taupe (was cool slate) */
+  --color-token-secondary-100: #f6efe3;
+  --color-token-secondary-200: #e9dcc8;
+  --color-token-secondary-300: #d3c3a8;
+  --color-token-secondary-500: #8a7c6b;
+  --color-token-secondary-600: #6a5d4e;
+  --color-token-secondary-700: #4c4136;
+  --color-token-secondary-800: #322a22;
 
   /* Error Colors */
   --color-token-error-100: #fee2e2;
@@ -131,35 +147,35 @@
 
   --gradient-token-mutual-likes: linear-gradient(
     135deg,
-    rgba(236, 72, 153, 0.2) 0%,
-    rgba(147, 51, 234, 0.2) 100%
+    rgba(183, 121, 31, 0.18) 0%,
+    rgba(194, 85, 78, 0.16) 100%
   );
 
-  /* Marketing Semantic Colors - Group 1 (8 tokens) */
-  --color-marketing-text-primary: #1f2937;
-  --color-marketing-text-secondary: #6b7280;
-  --color-marketing-error: #ef4444;
-  --color-marketing-error-bg: #fef2f2;
+  /* Marketing Semantic Colors — warm ink + espresso (was cool gray + navy) */
+  --color-marketing-text-primary: #1f1a17;
+  --color-marketing-text-secondary: #5f554d;
+  --color-marketing-error: #b42318;
+  --color-marketing-error-bg: #fbeae8;
   --gradient-marketing-primary: linear-gradient(
     to bottom right,
-    #021a44,
-    #063a9e
+    #2b1e12,
+    #43301c
   );
-  --gradient-marketing-card: linear-gradient(to bottom right, #021a44, #063a9e);
-  --bg-marketing-glass: rgba(255, 255, 255, 0.05);
-  --border-marketing-glass: rgba(255, 255, 255, 0.2);
+  --gradient-marketing-card: linear-gradient(to bottom right, #2b1e12, #43301c);
+  --bg-marketing-glass: rgba(255, 250, 242, 0.06);
+  --border-marketing-glass: rgba(255, 245, 230, 0.18);
 
-  /* Couples Theme System - Group 2 (7 tokens) */
-  --color-couples-primary: #ec4899;
-  --color-couples-secondary: #8b5cf6;
-  --color-couples-accent: #f43f5e;
-  --color-couples-success: #22c55e;
-  --color-couples-warning: #f59e0b;
-  --color-couples-info: #eab308;
+  /* Couples Theme System — warm terracotta + clay (was pink/purple) */
+  --color-couples-primary: #c2554e;
+  --color-couples-secondary: #a96f3c;
+  --color-couples-accent: #d07b4a;
+  --color-couples-success: #16764b;
+  --color-couples-warning: #b7791f;
+  --color-couples-info: #935f16;
   --gradient-couples-mutual: linear-gradient(
     to right,
-    rgba(236, 72, 153, 0.2),
-    rgba(139, 92, 246, 0.2)
+    rgba(194, 85, 78, 0.18),
+    rgba(169, 111, 60, 0.18)
   );
 
   /* Glassmorphism Enhancement - Group 3 (5 tokens) */
@@ -169,27 +185,27 @@
   --opacity-glass-subtle: 0.05;
   --opacity-glass-strong: 0.95;
 
-  /* Gradient Mesh Background Tokens */
-  --mesh-primary: #021a44;
-  --mesh-secondary: #063a9e;
-  --mesh-accent-warm: #1e3a5f;
-  --mesh-accent-glow: #0ea5e9;
-  --mesh-soft-purple: #1e1b4b;
+  /* Gradient Mesh Background Tokens — warm espresso + amber (was navy/blue) */
+  --mesh-primary: #2b1e12;
+  --mesh-secondary: #43301c;
+  --mesh-accent-warm: #6f4812;
+  --mesh-accent-glow: #b7791f;
+  --mesh-soft-purple: #3a2a1c;
 
-  /* Dark Card System */
-  --color-card-dark-bg: rgba(15, 23, 42, 0.85);
-  --color-card-dark-border: rgba(255, 255, 255, 0.1);
-  --color-card-dark-border-hover: rgba(255, 255, 255, 0.2);
+  /* Dark Card System — warm espresso (was cool slate) */
+  --color-card-dark-bg: rgba(43, 30, 18, 0.85);
+  --color-card-dark-border: rgba(255, 245, 230, 0.1);
+  --color-card-dark-border-hover: rgba(255, 245, 230, 0.2);
 
-  /* Glow Effects */
-  --glow-cyan-subtle: 0 0 40px rgba(56, 189, 248, 0.08);
-  --glow-cyan-medium: 0 0 60px rgba(56, 189, 248, 0.12);
-  --glow-couples-subtle: 0 0 40px rgba(236, 72, 153, 0.06);
+  /* Glow Effects — warm amber (was cyan/pink); names kept for compatibility */
+  --glow-cyan-subtle: 0 0 40px rgba(183, 121, 31, 0.1);
+  --glow-cyan-medium: 0 0 60px rgba(183, 121, 31, 0.14);
+  --glow-couples-subtle: 0 0 40px rgba(194, 85, 78, 0.08);
 
-  /* Text on Dark */
-  --color-text-on-dark-primary: #f8fafc;
-  --color-text-on-dark-secondary: #cbd5e1;
-  --color-text-on-dark-muted: #94a3b8;
+  /* Text on Dark — warm light (for warm-espresso surfaces) */
+  --color-text-on-dark-primary: #f7efe2;
+  --color-text-on-dark-secondary: #d9cab4;
+  --color-text-on-dark-muted: #ab9c87;
 
   /* Design Token Spacing */
   --spacing-xs: 0.25rem;
@@ -214,12 +230,12 @@
   --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.12);
   --shadow-card-hover: 0 8px 32px rgba(0, 0, 0, 0.16);
   --shadow-elevated: 0 12px 48px rgba(0, 0, 0, 0.2);
-  --shadow-glow-cyan: 0 0 40px rgba(56, 189, 248, 0.08);
-  --shadow-glow-cyan-strong: 0 0 60px rgba(56, 189, 248, 0.12);
+  --shadow-glow-cyan: 0 0 40px rgba(183, 121, 31, 0.1);
+  --shadow-glow-cyan-strong: 0 0 60px rgba(183, 121, 31, 0.14);
   --shadow-card-glow:
-    0 18px 44px rgba(0, 0, 0, 0.3), 0 0 40px rgba(56, 189, 248, 0.08);
+    0 18px 44px rgba(52, 43, 37, 0.16), 0 0 40px rgba(183, 121, 31, 0.1);
   --shadow-card-glow-hover:
-    0 24px 60px rgba(0, 0, 0, 0.4), 0 0 60px rgba(56, 189, 248, 0.12);
+    0 24px 60px rgba(52, 43, 37, 0.22), 0 0 60px rgba(183, 121, 31, 0.14);
 
   /* Design Token Animations */
   --duration-fast: 150ms;
@@ -259,9 +275,9 @@
 
 :root {
   --radius: 0.625rem;
-  --card: oklch(1 0 0);
+  --card: #fffaf2;
   --card-foreground: oklch(0.147 0.004 49.25);
-  --popover: oklch(1 0 0);
+  --popover: #fffaf2;
   --popover-foreground: oklch(0.147 0.004 49.25);
   --primary: oklch(0.216 0.006 56.043);
   --primary-foreground: oklch(0.985 0.001 106.423);
@@ -288,7 +304,7 @@
   --sidebar-accent-foreground: oklch(0.216 0.006 56.043);
   --sidebar-border: oklch(0.923 0.003 48.717);
   --sidebar-ring: oklch(0.709 0.01 56.259);
-  --background: oklch(1 0 0);
+  --background: #fbf7ef;
   --foreground: oklch(0.147 0.004 49.25);
 }
 
@@ -401,13 +417,13 @@
 
   /* Focus Ring Colors */
   .focus-visible\:ring-token-primary-light\/60:focus-visible {
-    --tw-ring-color: rgba(56, 189, 248, 0.6);
+    --tw-ring-color: rgba(183, 121, 31, 0.6);
   }
   .focus-visible\:ring-token-error-light\/20:focus-visible {
     --tw-ring-color: rgba(248, 113, 113, 0.2);
   }
   .dark .focus-visible\:ring-token-primary\/50:focus-visible {
-    --tw-ring-color: rgba(14, 165, 233, 0.5);
+    --tw-ring-color: rgba(183, 121, 31, 0.5);
   }
   .dark .focus-visible\:ring-token-error-light\/40:focus-visible {
     --tw-ring-color: rgba(248, 113, 113, 0.4);
@@ -415,7 +431,7 @@
 
   .bg-gradient-mutual-likes {
     background: var(--gradient-token-mutual-likes);
-    border-color: rgba(236, 72, 153, 0.4);
+    border-color: rgba(183, 121, 31, 0.4);
   }
 
   /* Enhanced glass-morphism style with design tokens */
@@ -506,7 +522,7 @@
   /* Focus State Utilities */
   .focus\:ring-token-primary:focus {
     --tw-ring-color: var(--color-token-primary-500);
-    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.3);
+    box-shadow: 0 0 0 3px rgba(154, 101, 20, 0.3);
   }
   .focus\:ring-token-error:focus {
     --tw-ring-color: var(--color-token-error-500);
@@ -717,21 +733,19 @@
   /* Luxury card style */
   .card-luxury {
     background-color: var(--hm-obsidian-900);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(95, 85, 77, 0.12);
     border-radius: 1rem;
     box-shadow:
-      0 4px 6px -1px rgba(0, 0, 0, 0.2),
-      0 2px 4px -2px rgba(0, 0, 0, 0.1),
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.03);
+      0 4px 6px -1px rgba(52, 43, 37, 0.08),
+      0 2px 4px -2px rgba(52, 43, 37, 0.06);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .card-luxury:hover {
-    border-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(147, 95, 22, 0.2);
     box-shadow:
-      0 10px 15px -3px rgba(0, 0, 0, 0.25),
-      0 4px 6px -4px rgba(0, 0, 0, 0.15),
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+      0 10px 15px -3px rgba(52, 43, 37, 0.12),
+      0 4px 6px -4px rgba(52, 43, 37, 0.08);
     transform: translateY(-2px);
   }
 
@@ -804,7 +818,7 @@
 
   /* Profile menu item hover glow */
   .profile-menu-content [data-slot='dropdown-menu-item']:focus {
-    background: rgba(255, 255, 255, 0.06);
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+    background: rgba(147, 95, 22, 0.08);
+    box-shadow: inset 0 0 0 1px rgba(147, 95, 22, 0.12);
   }
 }

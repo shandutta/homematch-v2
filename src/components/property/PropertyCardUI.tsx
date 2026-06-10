@@ -32,7 +32,7 @@ const PropertyMap = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="h-36 w-full animate-pulse rounded-xl border border-white/10 bg-slate-900/60" />
+      <div className="border-hm-border/60 bg-hm-border h-36 w-full animate-pulse rounded-xl border" />
     ),
   }
 )
@@ -401,12 +401,12 @@ export function PropertyCardUI({
         <div className="mb-3 flex items-start justify-between gap-3">
           <div>
             <h3
-              className="font-display text-hm-stone-200 text-lg font-medium tracking-tight"
+              className="font-display text-hm-ink text-lg font-medium tracking-tight"
               data-testid="property-address"
             >
               {property.address}
             </h3>
-            <p className="text-hm-stone-400 text-sm">
+            <p className="text-hm-muted text-sm">
               {neighborhood?.name || property.city}, {property.state}
             </p>
           </div>
@@ -414,7 +414,7 @@ export function PropertyCardUI({
             (detailsHref ? (
               <a
                 href={detailsHref}
-                className="text-hm-stone-200 hover:text-hm-stone-300 border-hm-stone-600/70 bg-hm-obsidian-900 inline-flex min-h-[44px] touch-manipulation items-center justify-center rounded-full border px-4 py-2 text-xs font-semibold tracking-[0.14em] uppercase transition-colors focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
+                className="text-hm-ink hover:text-hm-ink-soft border-hm-border/70 bg-hm-surface inline-flex min-h-[44px] touch-manipulation items-center justify-center rounded-full border px-4 py-2 text-xs font-semibold tracking-[0.14em] uppercase transition-colors focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
                 data-testid="details-cta"
                 onClick={(event) => {
                   event.preventDefault()
@@ -427,7 +427,7 @@ export function PropertyCardUI({
             ) : (
               <button
                 type="button"
-                className="text-hm-stone-200 hover:text-hm-stone-300 border-hm-stone-600/70 bg-hm-obsidian-900 inline-flex min-h-[44px] touch-manipulation items-center justify-center rounded-full border px-4 py-2 text-xs font-semibold tracking-[0.14em] uppercase transition-colors focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
+                className="text-hm-ink hover:text-hm-ink-soft border-hm-border/70 bg-hm-surface inline-flex min-h-[44px] touch-manipulation items-center justify-center rounded-full border px-4 py-2 text-xs font-semibold tracking-[0.14em] uppercase transition-colors focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
                 data-testid="details-cta"
                 onClick={(event) => {
                   event.stopPropagation()
@@ -440,23 +440,23 @@ export function PropertyCardUI({
         </div>
 
         {/* Stats - Typography-focused horizontal layout */}
-        <div className="text-hm-stone-300 mb-4 flex items-center text-sm">
+        <div className="text-hm-ink-soft mb-4 flex items-center text-sm">
           <span className="flex items-center gap-1.5">
-            <Bed className="text-hm-stone-500 h-4 w-4" />
+            <Bed className="text-hm-muted h-4 w-4" />
             <span className="font-medium">{formattedBeds}</span>
-            <span className="text-hm-stone-500">bed</span>
+            <span className="text-hm-muted">bed</span>
           </span>
-          <span className="text-hm-stone-600 mx-2.5">·</span>
+          <span className="text-hm-faint mx-2.5">·</span>
           <span className="flex items-center gap-1.5">
-            <Bath className="text-hm-stone-500 h-4 w-4" />
+            <Bath className="text-hm-muted h-4 w-4" />
             <span className="font-medium">{formattedBaths}</span>
-            <span className="text-hm-stone-500">bath</span>
+            <span className="text-hm-muted">bath</span>
           </span>
-          <span className="text-hm-stone-600 mx-2.5">·</span>
+          <span className="text-hm-faint mx-2.5">·</span>
           <span className="flex items-center gap-1.5">
-            <Square className="text-hm-stone-500 h-4 w-4" />
+            <Square className="text-hm-muted h-4 w-4" />
             <span className="font-medium">{formattedSqft}</span>
-            <span className="text-hm-stone-500">sqft</span>
+            <span className="text-hm-muted">sqft</span>
           </span>
         </div>
 
@@ -466,9 +466,9 @@ export function PropertyCardUI({
           (availableDetailViews.length === 1
             ? availableDetailViews[0] === 'story'
             : detailView === 'story')) ? (
-          <div className="border-hm-stone-600/60 border-t pt-4">
-            <div className="border-hm-stone-600/60 bg-hm-obsidian-900/80 rounded-xl border p-3">
-              <p className="text-hm-stone-400 mb-2 text-[10px] font-semibold tracking-[0.24em] uppercase">
+          <div className="border-hm-border/60 border-t pt-4">
+            <div className="border-hm-border/60 bg-hm-surface/80 rounded-xl border p-3">
+              <p className="text-hm-muted mb-2 text-[10px] font-semibold tracking-[0.24em] uppercase">
                 Why it may fit
               </p>
               <StorytellingDescription
@@ -486,14 +486,14 @@ export function PropertyCardUI({
         ) : null}
 
         {neighborhoodVibes && (
-          <div className="border-hm-stone-600/60 bg-hm-obsidian-900/65 mt-3 rounded-lg border px-3 py-2">
+          <div className="border-hm-border/60 bg-hm-surface/65 mt-3 rounded-lg border px-3 py-2">
             <div className="flex items-start gap-2">
-              <MapPin className="text-hm-stone-500 mt-0.5 h-3 w-3" />
+              <MapPin className="text-hm-muted mt-0.5 h-3 w-3" />
               <div>
-                <p className="text-hm-stone-500 text-[10px] font-semibold tracking-[0.22em] uppercase">
+                <p className="text-hm-muted text-[10px] font-semibold tracking-[0.22em] uppercase">
                   Neighborhood vibe
                 </p>
-                <p className="text-hm-stone-300 line-clamp-1 text-xs">
+                <p className="text-hm-ink-soft line-clamp-1 text-xs">
                   {neighborhoodVibes.tagline}
                 </p>
               </div>
@@ -511,7 +511,7 @@ export function PropertyCardUI({
             <div className="mt-4">
               <PropertyMap
                 property={property}
-                className="border-hm-stone-600/60 h-36 w-full overflow-hidden rounded-xl border"
+                className="border-hm-border/60 h-36 w-full overflow-hidden rounded-xl border"
               />
             </div>
           ) : null
@@ -519,14 +519,14 @@ export function PropertyCardUI({
 
         {/* Custom actions slot */}
         {actions && (
-          <div className="border-hm-stone-600/60 mt-auto border-t pt-4">
+          <div className="border-hm-border/60 mt-auto border-t pt-4">
             {actions}
           </div>
         )}
 
         {/* Trust signals: data source + last updated */}
         <div
-          className="text-hm-stone-500 mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] tracking-wide uppercase"
+          className="text-hm-muted mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] tracking-wide uppercase"
           data-testid="property-trust-signals"
         >
           <a
@@ -534,7 +534,7 @@ export function PropertyCardUI({
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="hover:text-hm-stone-300 inline-flex items-center gap-1 transition-colors"
+            className="hover:text-hm-ink-soft inline-flex items-center gap-1 transition-colors"
             data-testid="property-source-attribution"
           >
             <span>via Zillow</span>
@@ -555,7 +555,7 @@ export function PropertyCardUI({
                 e.stopPropagation()
                 triggerDecision('skip')
               }}
-              className="group bg-hm-obsidian-900 text-hm-error hover:border-hm-error/30 hover:bg-hm-error/10 focus-visible:ring-hm-error/50 border-hm-stone-600/70 flex h-12 w-12 items-center justify-center rounded-full border shadow-sm transition-all duration-200 focus-visible:ring-2 focus-visible:outline-none active:scale-95"
+              className="group bg-hm-surface text-hm-error hover:border-hm-error/30 hover:bg-hm-error/10 focus-visible:ring-hm-error/50 border-hm-border/70 flex h-12 w-12 items-center justify-center rounded-full border shadow-sm transition-all duration-200 focus-visible:ring-2 focus-visible:outline-none active:scale-95"
               aria-label="Pass property"
             >
               <X
@@ -568,7 +568,7 @@ export function PropertyCardUI({
                 e.stopPropagation()
                 triggerDecision('liked')
               }}
-              className="group bg-hm-obsidian-900 text-hm-success hover:border-hm-success/30 hover:bg-hm-success/10 focus-visible:ring-hm-success/50 border-hm-stone-600/70 flex h-12 w-12 items-center justify-center rounded-full border shadow-sm transition-all duration-200 focus-visible:ring-2 focus-visible:outline-none active:scale-95"
+              className="group bg-hm-surface text-hm-success hover:border-hm-success/30 hover:bg-hm-success/10 focus-visible:ring-hm-success/50 border-hm-border/70 flex h-12 w-12 items-center justify-center rounded-full border shadow-sm transition-all duration-200 focus-visible:ring-2 focus-visible:outline-none active:scale-95"
               aria-label="Like property"
               data-testid="like-button"
             >
